@@ -1,0 +1,3 @@
+jerm_bundle_index:
+    path: /di/{entity}
+    controller: JermBundle\Controller\BaseController::index
