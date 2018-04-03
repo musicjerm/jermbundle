@@ -35,7 +35,7 @@ class BaseController extends Controller
 
         /** @var FileLocator $fileLocator */
         $fileLocator = new FileLocator([$configDir]);
-        $configFile = $fileLocator->locate('Nav.yaml');
+        $configFile = $fileLocator->locate('nav.yaml');
 
         $yamlNav = Yaml::parse(file_get_contents($configFile));
 
