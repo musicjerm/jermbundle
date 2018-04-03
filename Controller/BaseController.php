@@ -13,10 +13,10 @@ class BaseController extends Controller
      * @param $entity
      * @return Response
      */
-    public function indexAction(UserInterface $user, $entity)
+    public function indexAction(UserInterface $user = null, $entity)
     {
 
-        return $this->render('JermBundle:Base:index.html.twig', array(
+        return $this->render('@JermBundle/Base/index.html.twig', array(
             'test_entity' => $entity
         ));
     }
