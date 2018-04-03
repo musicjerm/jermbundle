@@ -1,9 +1,7 @@
 {
     "name": "musicjerm/jermbundle",
     "description": "JermBundle Library for Symfony 4 projects",
-    "require": {
-        "symfony/flex": "^1.0"
-    },
+    "type": "symfony-bundle",
     "autoload": {
         "psr-4": { "Musicjerm\\Bundle\\JermBundle\\": "" }
     }
