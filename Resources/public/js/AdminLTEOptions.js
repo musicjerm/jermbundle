@@ -1,0 +1,3 @@
+var AdminLTEOptions = {
+    animationSpeed: 'fast'
+};

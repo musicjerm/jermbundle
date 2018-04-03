@@ -1,0 +1,74 @@
+{% if debug_message is defined and debug_message|length > 0 %}<p class="text-orange">{{ debug_message }}</p>{% endif %}
+<ul class="sidebar-menu">
+    {% for key, val in nav %}
+        {% if val.route is defined %}
+            <li {{ val.active ? 'class="active"' }}>
+                <a href="{{ val.parameters ? path(val.route, val.parameters) : path(val.route) }}">
+                    <i class="fa {{ val.icon }}"></i>
+                    {{ key }}
+                </a>
+            </li>
+        {% else %}
+            {% set show_tree = false %}
+            {% set active_tree = false %}
+            {% for subKey, subVal in val %}
+                {% if subVal.route is defined %}
+                    {% set show_tree = true %}
+                    {% if subVal.active %}{% set active_tree = true %}{% endif %}
+                {% else %}
+                    {% for subSubKey, subSubVal in subVal %}
+                        {% if subSubVal.route is defined %}
+                            {% set show_tree = true %}
+                            {% if subSubVal.active %}{% set active_tree = true %}{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            {% if show_tree %}
+                <li class="treeview {{ active_tree ? 'active' }}">
+                    <a href="#"><span>{{ key }}</span><i class="fa fa-angle-left pull-right"></i></a>
+                    <ul class="treeview-menu">
+                        {% for subKey, subVal in val %}
+                            {% if subVal.route is defined %}
+                                <li {{ subVal.active ? 'class="active"' }}>
+                                    <a href="{{ subVal.parameters ? path(subVal.route, subVal.parameters) : path(subVal.route) }}">
+                                        <i class="fa {{ subVal.icon }}"></i>
+                                        {{ subKey }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                {% set show_sub_tree = false %}
+                                {% set active_sub_tree = false %}
+                                {% for subSubKey, subSubVal in subVal %}
+                                    {% if subSubVal.route is defined %}
+                                        {% set show_sub_tree = true %}
+                                        {% if subSubVal.active %}{% set active_sub_tree = true %}{% endif %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if show_sub_tree %}
+                                    <li class="treeview {{ active_sub_tree ? 'active' }}">
+                                        <a href="#"><span>{{ subKey }}</span><i class="fa fa-angle-left pull-right"></i></a>
+                                        <ul class="treeview-menu">
+                                            {% for subSubKey, subSubVal in subVal %}
+                                                {% if subSubVal.route is defined %}
+                                                    <li {{ subSubVal.active ? 'class="active"' }}>
+                                                        <a href="{{ subSubVal.parameters ? path(subSubVal.route, subSubVal.parameters) : path(subSubVal.route) }}">
+                                                            <i class="fa {{ subSubVal.icon }}"></i>
+                                                            {{ subSubKey }}
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>

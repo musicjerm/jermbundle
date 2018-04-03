@@ -1,3 +1,3 @@
-jerm_bundle_index:
+jerm_bundle_data_index:
     path: /di/{entity}
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::indexAction

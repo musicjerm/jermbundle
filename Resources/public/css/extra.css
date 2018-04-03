@@ -1,0 +1,21 @@
+.slow-spin {
+    -webkit-animation: fa-spin 6s infinite linear;
+    animation: fa-spin 6s infinite linear;
+}
+
+.fast-spin {
+    -webkit-animation: fa-spin 0.5s infinite linear;
+    animation: fa-spin 0.5s infinite linear;
+}
+
+.fa-spin, .fa-pulse {
+    -webkit-filter: blur(0);
+}
+
+.ui-state-highlight {
+    background-color: #d2d6de;
+}
+
+.sortHandle {
+    cursor: move;
+}

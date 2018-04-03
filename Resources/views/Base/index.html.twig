@@ -1,11 +1,107 @@
+{% if app.user().jermBundleSkin is defined and app.user().jermBundleSkin %}
+    {% set active_skin = app.user().jermBundleSkin %}
+{% else %}
+    {% set active_skin = 'skin-blue' %}
+{% endif %}
 <!DOCTYPE html>
 <html>
 
-<body>
+<head>
+    <title>
+        {% if app_name is defined %}{{ app_name }}{% else %}App Name{% endif %}
+        {% block page_name %}{% endblock %}
+    </title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link href="{{ asset('libraries/Bootstrap/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('libraries/Font-Awesome/css/font-awesome.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('libraries/Select2/css/select2.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('libraries/AdminLTE/css/AdminLTE.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('libraries/Bootstrap-Datepicker/datepicker.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('libraries/AdminLTE/css/skins/'~active_skin~'.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('libraries/GoogleFont/font.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('bundles/jerm/css/extra.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('app/css/extra.css') }}" type="text/css" rel="stylesheet">
+    {% block stylesheets %}{% endblock %}
+    <link href="{{ absolute_url(asset('favicon.ico')) }}" rel="icon" type="image/x-icon">
+</head>
 
-<h3>Test Title</h3>
-<p>Entity: {{ test_entity }}</p>
+<body class="hold-transition {{ active_skin }} fixed">
+<div class="wrapper">
 
+    <header class="main-header">
+        <a href="/" class="logo">
+            <span class="logo-mini"><b>{% if app_short_name is defined %}{{ app_short_name }}{% else %}AN{% endif %}</b></span>
+            <span class="logo-lg"><b>{% if app_name is defined %}{{ app_name }}{% else %}App Name{% endif %}</b></span>
+        </a>
+
+        <nav class="navbar navbar-static-top">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas">
+                <span class="sr-only">Toggle Nav</span>
+            </a>
+            <div class="nav navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    {% block heading_list %}
+                        <li class="dropdown notifications-menu">
+                            {% if app.user is not null %}
+                                {{ render(controller('JermBundle:Base:message')) }}
+                            {% endif %}
+                        </li>
+
+                        <li class="dropdown user user-menu">
+                            {% if app.user %}
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    {% if app.user().profilePic is defined and app.user().profilePic %}
+                                        <img src="{{ asset('app/img/userProfile/' ~ app.user().profilePic) }}" class="user-image" alt="Avatar">
+                                    {% else %}
+                                        <img src="{{ asset('bundles/jerm/img/avatar.gif') }}" class="user-image" alt="Avatar">
+                                    {% endif %}
+                                    <span class="hidden-xs">{{ app.user().getUsername }}</span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li class="user-header">
+                                        {% if app.user().profilePic is defined and app.user().profilePic %}
+                                            <img src="{{ asset('app/img/userProfile/' ~ app.user().profilePic) }}" class="img-circle" alt="Avatar">
+                                        {% else %}
+                                            <img src="{{ asset('bundles/jerm/img/avatar.gif') }}" class="img-circle" alt="Avatar">
+                                        {% endif %}
+                                        <p>
+                                            {% if app.user().getFirstName is defined and app.user().getFirstName %}
+                                                {{ app.user().getFirstName }} {{ app.user().getLastName }}
+                                            {% endif %}
+                                            <small>{{ "Now"|date('m-d-Y') }}</small>
+                                        </p>
+                                    </li>
+                                    <li class="user-footer">
+                                        <div class="pull-left">
+                                            <a href="{{ path('profile') }}" class="btn btn-default btn-flat">Profile</a>
+                                        </div>
+                                        <div class="pull-right">
+                                            <a href="{{ logout_path('main') }}" class="btn btn-default btn flat">Log Out</a>
+                                        </div>
+                                    </li>
+                                </ul>
+                                {# else %}
+                                    <a href="{{ path('Login_route') }}">Log In</a>#}
+                            {% endif %}
+                        </li>
+                    {% endblock %}
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            {{ render(controller('JermBundle:Base:nav', {
+                'current_route': app.request.attributes.get('_route'),
+                'current_params': app.request.attributes.get('_route_params')
+            })) }}
+        </section>
+    </aside>
+
+</div>
 </body>
 
 </html>
