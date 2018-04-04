@@ -101,7 +101,41 @@
         </section>
     </aside>
 
+    <div class="content-wrapper">
+        <section class="content">
+            {% block body %}{% endblock %}
+            <div class="modal" id="action_modal" tabindex="-1" role="dialog" data-backdrop="static"></div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        {% if app_version is defined %}
+            <div class="pull-right hidden-xs">
+                <b>Version</b> {{ app_version }}
+            </div>
+        {% endif %}
+
+        {% if app_author is defined %}
+            <strong>&copy; {{ "now"|date('Y') }} {{ app_author }}</strong>
+        {% endif %}
+    </footer>
+
+    {% block control_sidebar %}{% endblock %}
+
 </div>
+
+<script src="{{ asset('libraries/jQuery/jquery-3.2.1.min.js') }}"></script>
+<script src="{{ asset('libraries/Bootstrap/js/bootstrap.min.js') }}"></script>
+<script src="{{ asset('libraries/Select2/js/select2.min.js') }}"></script>
+<script src="{{ asset('libraries/jQuery-SlimScroll/jquery.slimscroll.min.js') }}"></script>
+<script src="{{ asset('libraries/Inputmask/jquery.inputmask.bundle.min.js') }}"></script>
+<script src="{{ asset('libraries/Bootstrap-Datepicker/datepicker.js') }}"></script>
+{% block javascripts %}{% endblock %}
+<script src="{{ asset('bundles/jerm/js/index.js') }}"></script>
+<script src="{{ asset('bundles/jerm/js/AdminLTEOptions.js') }}"></script>
+<script src="{{ asset('libraries/AdminLTE/js/app.min.js') }}"></script>
+<script src="{{ asset('libraries/Clipboardjs/clipboard.min.js') }}"></script>
+
 </body>
 
 </html>

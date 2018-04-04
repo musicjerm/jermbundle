@@ -3,6 +3,7 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Musicjerm\Bundle\JermBundle\Model\NavModel;
+use Musicjerm\Bundle\JermBundle\Repository\NotificationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
