@@ -1,0 +1,33 @@
+<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+    <i class="fa fa-bell-o"></i>
+    <span id="notification_unread_count" class="label label-success">{% if unread_count > 0 %}{{ unread_count }}{% endif %}</span>
+</a>
+<ul class="dropdown-menu">
+    <li id="notification_links_header" class="header">You have {% if unread_count == 0 %}no{% else %}{{ unread_count }}{% endif %} unread {{ plurality }}</li>
+
+    <li>
+        <ul class="menu">
+            {% for message in messages %}
+                <li>
+                    <a href="#" class="head_action_btn" data-toggle="modal" data-target="#action_modal" data-href="{{ url('notification_view', {'id': message.id}) }}">
+                        {% if message.unread %}
+                            <i id="notification_icon_{{ message.id }}" class="fa fa-envelope text-green"></i>
+                            <span id="notification_text_{{ message.id }}">
+                                {{ message.subject }}
+                            </span>
+                        {% else %}
+                            <i id="notification_icon_{{ message.id }}" class="fa fa-envelope-o text-muted"></i>
+                            <span id="notification_text_{{ message.id }}" class="text-muted">
+                                {{ message.subject }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </li>
+
+    <li class="footer">
+        <a href="{{ url('data_index', {'entity': 'notification'}) }}">View notifications</a>
+    </li>
+</ul>
