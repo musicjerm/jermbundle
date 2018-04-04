@@ -1,0 +1,44 @@
+{% extends 'JermBundle:Modal:blank.html.twig' %}
+
+{% block content %}
+
+    <div class="modal-header">
+        <button class="close" type="button" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">
+            {% if notification.icon %}
+                <i class="fa fa-{{ notification.icon }}"></i>
+            {% endif %}
+            {{ notification.subject }}
+        </h4>
+        <small class="text-muted">{{ notification.dateString }}</small>
+    </div>
+
+    <div class="modal-body">
+
+        {% if notification.class %}
+            <p class="text-{{ notification.class }}">
+                {{ notification.message|nl2br }}
+            </p>
+        {% else %}
+            <p class="text-info">
+                {{ notification.message|nl2br }}
+            </p>
+        {% endif %}
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">Close</button>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script
+            id="notification_script"
+            src="{{ asset('Bundle/JermBundle/js/modalNotificationView.js') }}"
+            data-status="{{ notification_status }}"
+            data-message="{{ notification.id }}"
+    >
+    </script>
+{% endblock %}

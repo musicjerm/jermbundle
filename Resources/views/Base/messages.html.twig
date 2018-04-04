@@ -9,7 +9,7 @@
         <ul class="menu">
             {% for message in messages %}
                 <li>
-                    <a href="#" class="head_action_btn" data-toggle="modal" data-target="#action_modal" data-href="{{ url('notification_view', {'id': message.id}) }}">
+                    <a href="#" class="head_action_btn" data-toggle="modal" data-target="#action_modal" data-href="{{ url('jerm_bundle_notification_view', {'id': message.id}) }}">
                         {% if message.unread %}
                             <i id="notification_icon_{{ message.id }}" class="fa fa-envelope text-green"></i>
                             <span id="notification_text_{{ message.id }}">
@@ -28,6 +28,6 @@
     </li>
 
     <li class="footer">
-        <a href="{{ url('data_index', {'entity': 'notification'}) }}">View notifications</a>
+        <a href="{{ url('jerm_bundle_data_index', {'entity': 'notification'}) }}">View notifications</a>
     </li>
 </ul>

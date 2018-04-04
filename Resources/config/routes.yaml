@@ -1,3 +1,7 @@
 jerm_bundle_data_index:
     path: /di/{entity}
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::indexAction
+
+jerm_bundle_notification_view:
+    path: /notification/view/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\NotificationController::viewAction

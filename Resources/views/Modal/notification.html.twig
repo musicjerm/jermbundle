@@ -1,0 +1,55 @@
+{% extends 'JermBundle:Modal:blank.html.twig' %}
+
+{% block content %}
+
+    <div class="modal-body">
+
+        {% if type is defined and type == 'success' %}
+            <p class="text-green">
+                <i class="fa fa-check-circle"></i>
+                {{ message|nl2br }}
+            </p>
+        {% elseif type is defined and type == 'warning' %}
+            <p class="text-orange">
+                <i class="fa fa-exclamation-triangle"></i>
+                {{ message|nl2br }}
+            </p>
+        {% elseif type is defined and type == 'error' %}
+            <p class="text-red">
+                <i class="fa fa-ban"></i>
+                {{ message|nl2br }}
+            </p>
+        {% else %}
+            <p class="text-light-blue">
+                <i class="fa fa-info-circle"></i>
+                {{ message|nl2br }}
+            </p>
+        {% endif %}
+
+    </div>
+
+    {% if fade is not defined or not fade %}
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">Close</button>
+        </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block javascripts %}
+    <script id="notification_script"
+        src="{{ asset('Bundle/JermBundle/js/modalNotification.js') }}"
+            {% if full_refresh is defined and full_refresh %}
+                data-full-refresh="true"
+            {% endif %}
+            {% if refresh is defined and refresh %}
+                data-refresh="true"
+            {% endif %}
+            {% if clear_session is defined and clear_session %}
+                data-clear="true"
+            {% endif %}
+            {% if fade is defined and fade %}
+                data-fade="true"
+            {% endif %}
+    ></script>
+{% endblock %}
