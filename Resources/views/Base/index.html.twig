@@ -82,8 +82,8 @@
                                         </div>
                                     </li>
                                 </ul>
-                                {# else %}
-                                    <a href="{{ path('Login_route') }}">Log In</a>#}
+                            {% else %}
+                                <a href="{{ path('login') }}">Log In</a>#}
                             {% endif %}
                         </li>
                     {% endblock %}
