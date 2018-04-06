@@ -1,0 +1,43 @@
+{% extends '@JermBundle/Modal/form.html.twig' %}
+
+{% block form %}
+    <pre><i class="fa fa-warning"></i> Warning, this cannot be undone.  Unchecked items may not be deleted.</pre>
+
+    <div class="table-responsive">
+        <table class="table">
+            <tbody>
+            {% for key, item in delete_array %}
+                {% if item.delete %}
+                    <tr>
+                        <td><i class="fa fa-check-square-o"></i></td>
+                        <td>{{ key }}</td>
+                        <td>{{ item.string }}</td>
+                    </tr>
+                {% else %}
+                    <tr class="text-muted">
+                        <td><i class="fa fa-square-o"></i></td>
+                        <td>{{ key }}</td>
+                        <td>{{ item.string }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {{ parent() }}
+    {% if delete_count > 0 %}
+        <div><i class="fa fa-warning"></i> {{ delete_count }} item(s) will be deleted.</div>
+    {% else %}
+        <div><i class="fa fa-warning"></i> No items to delete.</div>
+    {% endif %}
+{% endblock %}
+
+{% block footer %}
+    <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">Close</button>
+    {% if delete_count > 0 %}
+        <input id="action_submit_btn" type="submit" value="Confirm" class="btn btn-danger btn-flat pull-right">
+    {% else %}
+        <input id="action_submit_btn" type="submit" value="Confirm" class="btn btn-danger btn-flat pull-right" disabled>
+    {% endif %}
+{% endblock %}

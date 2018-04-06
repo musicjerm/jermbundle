@@ -1,0 +1,276 @@
+{% extends '@JermBundle/Base/index.html.twig' %}
+
+{% form_theme filters_form '@JermBundle/Form/bootstrap_extended_layout.html.twig' %}
+
+{% block page_name %}{{ yaml_config.page_name }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="{{ asset('libraries/DataTables/css/dataTables.bootstrap.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ asset('bundles/jerm/css/tableFormatting.css') }}" type="text/css" rel="stylesheet">
+{% endblock %}
+
+{% block heading_list %}
+    {{ parent() }}
+    <li>
+        <a href="#" data-toggle="control-sidebar">
+            <i class="fa fa-gears"></i>
+        </a>
+    </li>
+{% endblock %}
+
+{% block body %}
+
+    {% if active_skin == 'skin-blue' %}
+        {% set box_theme = 'box-info' %}
+    {% elseif active_skin == 'skin-green' %}
+        {% set box_theme = 'box-success' %}
+    {% elseif active_skin == 'skin-yellow' %}
+        {% set box_theme = 'box-warning' %}
+    {% elseif active_skin == 'skin-purple' %}
+        {% set box_theme = 'box-primary' %}
+    {% elseif active_skin == 'skin-red' %}
+        {% set box_theme = 'box-danger' %}
+    {% elseif active_skin == 'skin-black-light' %}
+        {% set box_theme = 'box-info' %}
+    {% else %}
+        {% set box_theme = 'box-default' %}
+    {% endif %}
+
+    <div class="box {{ box_theme }}">
+        <div class="box-header with-border">
+            <h3 class="box-title">
+                {% block title %}{{ yaml_config.page_name }}{% endblock %}
+                <a id="clear_filters_btn" class="btn btn-sm btn-flat">
+                    <i class="fa fa-filter"></i>
+                    Clear Filters
+                </a>
+            </h3>
+            <div class="pull-right">
+                {% if yaml_config.actions.head is defined %}
+                    {% for key, action in yaml_config.actions.head %}
+                        {% if is_granted(action.role) %}
+                            {% if action.params is defined %}
+                                {% set generatedPath = path(key, action.params) %}
+                            {% else %}
+                                {% set generatedPath = path(key) %}
+                            {% endif %}
+                            <a class="btn btn-sm btn-flat {{ action.btn }} head_action_btn"
+                               data-toggle="modal"
+                               data-target="#action_modal"
+                               data-href="{{ generatedPath }}">
+                                <i class="fa {{ action.icon }}"></i>
+                                {{ action.text }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                <a id="data_get_csv" class="btn btn-sm btn-flat btn-default">
+                    <i class="fa fa-download"></i> Get CSV
+                </a>
+            </div>
+        </div>
+
+        <div class="box-body">
+            {% if filters_form %}{{ form_start(filters_form) }}{% endif %}
+            <div class="row">
+                <div class="col-xs-4 col-sm-2">
+                    <div class="form-group">
+                        <label class="control-label" for="page_length_selector">Show</label>
+                        <select id="page_length_selector" class="form-control">
+                            <option {% if setting_rpp == 10 %}selected{% endif %}>10</option>
+                            <option {% if setting_rpp == 20 %}selected{% endif %}>20</option>
+                            <option {% if setting_rpp == 50 %}selected{% endif %}>50</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% block data_filters %}
+                    <div class="col-xs-8 col-sm-10">
+                        {% block filters %}
+                            {% if filters_form %}{{ form_widget(filters_form) }}{% endif %}
+                        {% endblock %}
+                    </div>
+                {% endblock %}
+
+            </div>
+
+            {% if advanced_filters %}
+                <a class="collapsed" data-toggle="collapse" href="#advancedFilters">Advanced Filters</a>
+                <div id="advancedFilters" class="row collapse">
+                    {% block advanced_filters %}{% endblock %}
+                </div>
+            {% endif %}
+            {% if filters_form %}{{ form_end(filters_form) }}{% endif %}
+        </div>
+    </div>
+
+    <div class="box {{ box_theme }}">
+
+        <div class="box-body">
+
+            <table id="data_info_table" class="table table-condensed table-bordered table-striped" style="width: 100%"></table>
+
+            <div>
+                {% if yaml_config.actions.group is defined %}
+                    {% for key, action in yaml_config.actions.group %}
+                        {% if is_granted(action.role) %}
+                            {% if action.params is defined %}
+                                {% set generatedPath = path(key, action.params) %}
+                            {% else %}
+                                {% set generatedPath = path(key) %}
+                            {% endif %}
+                            <a class="btn btn-link pull-right batch_action_btn disabled"
+                               data-toggle="modal"
+                               data-target="#action_modal"
+                               data-href="{{ generatedPath }}">
+                                {{ action.text }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block control_sidebar %}
+    <aside class="control-sidebar control-sidebar-dark">
+        <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+            <li class="active"><a href="#control-columns-tab" data-toggle="tab"><i class="fa fa-columns"></i></a></li>
+            <li><a href="#control-filters-tab" data-toggle="tab"><i class="fa fa-filter"></i></a></li>
+            <li><a href="#control-share-tab" data-toggle="tab"><i class="fa fa-share-alt"></i></a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="control-columns-tab" class="tab-pane active">
+                <h3 class="control-sidebar-heading">
+                    Column Preset
+                    <a class="btn btn-xs btn-flat btn-success head_action_btn pull-right"
+                       data-toggle="modal"
+                       data-target="#action_modal"
+                       data-href="{{ path('jerm_bundle_data_column_config_create', { 'entity': entity, 'id': active_column_preset }) }}">
+                        <i class="fa fa-plus"></i> Create New
+                    </a>
+                </h3>
+                {% if column_preset_form.selectLayout|length > 0 %}
+                    {{ form_start(column_preset_form, { 'attr': { 'id': 'column_preset_form' } }) }}
+                    {% for radio in column_preset_form.selectLayout %}
+                        <div class="row">
+                            <div class="col-xs-8">
+                                {{ form_widget(radio, { 'attr': { 'class': 'column_preset_selector' } }) }}
+                                {{ form_label(radio) }}
+                            </div>
+                            <div class="col-xs-4">
+                                <a class="btn btn-xs btn-flat btn-warning head_action_btn"
+                                   data-toggle="modal"
+                                   data-target="#action_modal"
+                                   data-href="{{ path('jerm_bundle_data_column_config_update', { 'entity': entity, 'id': radio.vars.value }) }}"
+                                   title="edit">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+
+                                <a class="btn btn-xs btn-flat btn-danger delete_preset_btn"
+                                   data-href="{{ path('jerm_bundle_data_column_config_delete', { 'entity': entity, 'id': radio.vars.value }) }}"
+                                   title="delete">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {{ form_end(column_preset_form) }}
+                {% endif %}
+            </div>
+
+            <div id="control-filters-tab" class="tab-pane">
+                <h3 class="control-sidebar-heading">
+                    Filter Preset
+                    <a id="new_filter_btn"
+                       class="btn btn-xs btn-flat btn-success pull-right"
+                       data-toggle="modal"
+                       data-target="#action_modal"
+                       data-href="{{ path('jerm_bundle_data_filters_create', { 'entity': entity }) }}">
+                        <i class="fa fa-plus"></i> Save New
+                    </a>
+                </h3>
+                {% if filter_preset_form.selectPreset|length > 0 %}
+                    {{ form_start(filter_preset_form, { 'attr': { 'id': 'filter_preset_form' } }) }}
+                    {% for radio in filter_preset_form.selectPreset %}
+                        <div class="row">
+                            <div class="col-xs-8">
+                                {{ form_widget(radio, { 'attr': { 'class': 'filter_preset_selector' } }) }}
+                                {{ form_label(radio) }}
+                            </div>
+                            <div class="col-xs-4">
+                                <a class="btn btn-xs btn-flat btn-warning head_action_btn"
+                                   data-toggle="modal"
+                                   data-target="#action_modal"
+                                   data-href="{{ path('jerm_bundle_data_filter_preset_update', { 'entity': entity, 'id': radio.vars.value }) }}"
+                                   title="edit">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+
+                                <a class="btn btn-xs btn-flat btn-danger delete_preset_btn"
+                                   data-href="{{ path('jerm_bundle_data_filter_preset_delete', { 'entity': entity, 'id': radio.vars.value }) }}"
+                                   title="delete">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div id="control-share-tab" class="tab-pane">
+                <h3 class="control-sidebar-heading">
+                    Share Your Presets
+                </h3>
+
+                <div class="form-group">
+                    <label for="share_preset_view" class="control-label">Link to View</label>
+                    <div class="input-group">
+                        <input id="share_preset_view" class="form-control share_preset_link" readonly value="{{ absolute_url(path('jerm_bundle_data_index', { 'entity': entity, 'column_preset': active_column_preset, 'filter_preset': active_filter_preset })) }}">
+                        <span class="input-group-btn">
+                            <button
+                                    data-clipboard-target="#share_preset_view"
+                                    data-toggle="tooltip"
+                                    type="button"
+                                    class="btn btn-flat btn-default share_preset_copy_btn"
+                                    title="Copy">
+                                <i class="fa fa-copy"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="share_preset_csv" class="control-label">Link to CSV Dump</label>
+                    <div class="input-group">
+                        <input id="share_preset_csv" class="form-control share_preset_link" readonly value="{{ absolute_url(path('jerm_bundle_data_get_csv', { 'entity': entity, 'column_preset': active_column_preset, 'filter_preset': active_filter_preset })) }}">
+                        <span class="input-group-btn">
+                            <button
+                                    data-clipboard-target="#share_preset_csv"
+                                    data-toggle="tooltip"
+                                    type="button"
+                                    class="btn btn-flat btn-default share_preset_copy_btn"
+                                    title="Copy">
+                                <i class="fa fa-copy"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <div class="control-sidebar-bg"></div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('libraries/DataTables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('libraries/DataTables/js/dataTables.bootstrap.min.js') }}"></script>
+    <script id="render_dt" src="{{ asset('bundles/jerm/js/dtRender.js') }}"
+        data-entity="{{ entity }}"
+        data-column-preset="{{ active_column_preset }}"
+        data-filter-preset="{{ active_filter_preset }}"></script>
+    <script src="{{ asset('bundles/jerm/js/dtActions.js') }}"></script>
+{% endblock %}

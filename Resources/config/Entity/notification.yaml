@@ -1,0 +1,36 @@
+entity: 'JermBundle:Notification'
+role: 'ROLE_USER'
+page_name: 'Notifications'
+
+columns:
+    - {title: 'ID', data: 'id', sort: 'n.id'}
+    - {title: 'Subject', data: 'subjectStatus', sort: 'n.subject'}
+    - {title: 'Message', data: 'message', sort: 'n.message'}
+    - {title: 'Status', data: 'status', sort: 'n.unread'}
+    - {title: 'Date', data: 'dateString', sort: 'n.date'}
+
+key: 'id'
+view: [1, 4]
+tooltip: [-1, 2, -1, -1, -1]
+sortDir: 'desc'
+
+#template: 'AppBundle:DataIndex:notification.html.twig'
+
+filters:
+    -
+        name: 'status'
+        type: 'Choice'
+        array:
+            choices: {"Unread Only": true, Read: false}
+            placeholder: 'All'
+
+actions:
+    item:
+        jerm_bundle_notification_view: {role: 'ROLE_USER', icon: 'fa-eye', text: 'View'}
+    group:
+        #jerm_bundle_crud_delete:
+        #    role: 'ROLE_USER'
+        #    text: 'Delete Selected'
+        #    restrict_owner: true
+        #    params: { entity: 'notification' }
+        jerm_bundle_notification_mark_read: {role: 'ROLE_USER', text: 'Mark Read'}

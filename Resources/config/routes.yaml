@@ -1,7 +1,70 @@
 jerm_bundle_data_index:
-    path: /di/{entity}
+    path: /di/{entity}/{column_preset}/{filter_preset}
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::indexAction
+    defaults:
+        column_preset: -1
+        filter_preset: -1
+
+jerm_bundle_data_columns:
+    path: /data/columns/{entity}/{column_preset}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::dataColumnsAction
+    defaults:
+        column_preset: -1
+
+jerm_bundle_data_query:
+    path: /data/query/{entity}/{column_preset}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::dataQueryAction
+    defaults:
+        column_preset: -1
+
+jerm_bundle_data_column_config_create:
+    path: /data/column/config/create/{entity}/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::dataConfigCreateAction
+    defaults:
+        id: -1
+
+jerm_bundle_data_column_config_update:
+    path: /data/column/config/update/{entity}/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::dataConfigUpdateAction
+
+jerm_bundle_data_column_config_delete:
+    path: /data/column/config/delete/{entity}/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::dataConfigDeleteAction
+
+jerm_bundle_data_filters_create:
+    path: /data/filters/create/{entity}
+    controller: Musicjerm\Bundle\JermBundle\Controller\FiltersController::createAction
+
+jerm_bundle_data_filter_preset_update:
+    path: /data/filters/update/{entity}/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\FiltersController::updateAction
+
+jerm_bundle_data_filter_preset_delete:
+    path: /data/filters/delete/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\FiltersController::deleteAction
+
+jerm_bundle_data_get_csv:
+    path: /data/get_csv/{entity}/{column_preset}/{filter_preset}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::getCsvAction
+    defaults:
+        column_preset: -1
+        filter_preset: -1
+
+jerm_bundle_api_data_get_csv:
+    path: /api/get_csv/{entity}/{column_preset}/{filter_preset}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::getCsvAction
+    defaults:
+        column_preset: -1
+        filter_preset: -1
+
+jerm_bundle_clear_session:
+    path: /session/clear
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::clearSessionAction
 
 jerm_bundle_notification_view:
     path: /notification/view/{id}
     controller: Musicjerm\Bundle\JermBundle\Controller\NotificationController::viewAction
+
+jerm_bundle_notification_mark_read:
+    path: /notification/mark_read
+    controller: Musicjerm\Bundle\JermBundle\Controller\NotificationController::markReadAction

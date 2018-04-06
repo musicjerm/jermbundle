@@ -1,0 +1,36 @@
+{% extends '@JermBundle/Modal/blank.html.twig' %}
+
+{% form_theme form '@JermBundle/Form/bootstrap_extended_layout.html.twig' %}
+
+{% block content %}
+    {{ form_start(form, { 'attr': { 'id': 'action_form' } }) }}
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        {% block header %}{% if header is defined %}<h4 class="modal-title">{{ header }}</h4>{% endif %}{% endblock %}
+    </div>
+
+    <div class="modal-body">
+        {% block form %}{{ form_widget(form) }}{% endblock %}
+    </div>
+
+    <div class="modal-footer">
+        {% block footer %}
+            {% if previous_path is defined and previous_path %}
+                <button type="button" class="btn btn-default btn-flat pull-left modal_redirect" data-href="{{ previous_path }}">Back</button>
+            {% else %}
+                <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">Close</button>
+            {% endif %}
+            <input id="action_submit_btn" type="submit" value="Confirm" class="btn btn-primary btn-flat pull-right">
+        {% endblock %}
+    </div>
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('bundles/jerm/js/modalForm.js') }}"></script>
+    {% if front_load is defined %}
+        {% for js_file in front_load %}
+            <script src="{{ asset(js_file) }}"></script>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

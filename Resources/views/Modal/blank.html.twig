@@ -1,0 +1,22 @@
+{% if modal_size is not defined %}{% set modal_size = '' %}{% endif %}
+<div class="modal-dialog {{ modal_size }}">
+    <div class="modal-content box">
+
+        {% block content %}
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    This is an empty modal template.  You should consider extending and replacing the content block.
+                </div>
+            </div>
+        {% endblock %}
+
+        <div id="action_loading_div" class="overlay">
+            <i class="fa fa-spinner fa-pulse text-gray"></i>
+        </div>
+
+    </div>
+</div>
+
+<script src="{{ asset('bundles/jerm/js/hideActionSpinner.js') }}"></script>
+{% block javascripts %}{% endblock %}

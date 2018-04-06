@@ -1,0 +1,71 @@
+{% extends '@JermBundle/Modal/form.html.twig' %}
+
+{% block form %}
+    <div class="row">
+        <div class="col-xs-12 col-md-8">
+            {{ form_row(form.name) }}
+        </div>
+        <div class="col-xs-12 col-md-4">
+            <strong>Set as Primary</strong>
+            {{ form_row(form.isPrimary) }}
+        </div>
+    </div>
+    {% form_theme form _self %}
+    <div class="text-red">
+        {{ form_errors(form.view) }}
+        {{ form_errors(form.dataDump) }}
+    </div>
+    <div class="table-responsive">
+        <table id="dt_config_table" class="table table-condensed">
+            <thead>
+            <tr>
+                <th></th>
+                <th>
+                    <input id="select_all_view" type="checkbox" title="select_all_view"> View
+                </th>
+                <th>
+                    <input id="select_all_csv" type="checkbox" title="select_all_csv"> CSV
+                </th>
+                <th>Column</th>
+                <th>Tooltip</th>
+                <th>
+                    <a class="btn btn-link btn-sm modal_redirect" data-href="{{ resetUrl }}"><i class="fa fa-undo fa-lg"></i></a>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key in colOrder %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ form_row(attribute(form.view, key), { 'attr': { 'class': 'view_selector' } }) }}</td>
+                    <td>{{ form_widget(attribute(form.dataDump, key), { 'attr': { 'class': 'csv_selector' } }) }}</td>
+                    <td>
+                        {{ attribute(columnNames, key) }}
+                        {{ form_widget(attribute(form.colOrder, key)) }}
+                    </td>
+                    <td>{{ form_widget(attribute(form.tooltip, key)) }}</td>
+                    <td class="sortHandle">
+                        <i class="fa fa-th fa-2x fa-rotate-90 text-info"></i>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6">
+            {{ form_row(form.sortId) }}
+        </div>
+        <div class="col-xs-6">
+            {{ form_row(form.sortDir) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('libraries/jQuery-UI/jquery-ui.min.js') }}"></script>
+    <script src="{{ asset('libraries/jQuery-UI-Touch-Punch/jquery.ui.touch-punch.min.js') }}"></script>
+    <script src="{{ asset('bundles/jerm/js/dtConfigForm.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% use 'bootstrap_3_layout.html.twig' %}
+
+{% block text_widget -%}
+    {% if addon_icon is defined %}
+        <div class="input-group">
+            <span class="input-group-addon"><i class="fa {{ addon_icon }}"></i></span>
+            {{- block('form_widget_simple') -}}
+        </div>
+    {% else %}
+        {{- block('form_widget_simple') -}}
+    {% endif %}
+{%- endblock text_widget %}
+
+{% block email_widget -%}
+    <div class="input-group">
+        <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+        {{- block('form_widget_simple') -}}
+    </div>
+{%- endblock email_widget %}
+
+{% block date_widget -%}
+    {% if widget == 'single_text' %}
+        <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+            {{- block('form_widget_simple') -}}
+        </div>
+    {% endif %}
+{%- endblock date_widget %}

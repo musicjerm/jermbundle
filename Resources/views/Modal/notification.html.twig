@@ -1,4 +1,4 @@
-{% extends 'JermBundle:Modal:blank.html.twig' %}
+{% extends '@JermBundle/Modal/blank.html.twig' %}
 
 {% block content %}
 
@@ -38,7 +38,7 @@
 
 {% block javascripts %}
     <script id="notification_script"
-        src="{{ asset('Bundle/JermBundle/js/modalNotification.js') }}"
+        src="{{ asset('bundles/jerm/js/modalNotification.js') }}"
             {% if full_refresh is defined and full_refresh %}
                 data-full-refresh="true"
             {% endif %}

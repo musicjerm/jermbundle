@@ -1,4 +1,4 @@
-{% extends 'JermBundle:Modal:blank.html.twig' %}
+{% extends '@JermBundle/Modal/blank.html.twig' %}
 
 {% block content %}
 
@@ -36,7 +36,7 @@
 {% block javascripts %}
     <script
             id="notification_script"
-            src="{{ asset('Bundle/JermBundle/js/modalNotificationView.js') }}"
+            src="{{ asset('bundles/jerm/js/modalNotificationView.js') }}"
             data-status="{{ notification_status }}"
             data-message="{{ notification.id }}"
     >
