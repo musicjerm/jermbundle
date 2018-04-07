@@ -15,6 +15,7 @@ use Musicjerm\Bundle\JermBundle\Form\FilterPresetType;
 use Musicjerm\Bundle\JermBundle\Model\ColumnBuilder;
 use Musicjerm\Bundle\JermBundle\Model\NavModel;
 use Musicjerm\Bundle\JermBundle\Repository\NotificationRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
