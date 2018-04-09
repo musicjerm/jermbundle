@@ -57,6 +57,18 @@ jerm_bundle_api_data_get_csv:
         column_preset: -1
         filter_preset: -1
 
+jerm_bundle_crud_create:
+    path: /crud/create/{entity}
+    controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::createAction
+
+jerm_bundle_crud_update:
+    path: /crud/update/{entity}/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::updateAction
+
+jerm_bundle_crud_delete:
+    path: /crud/delete/{entity}
+    controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::deleteAction
+
 jerm_bundle_clear_session:
     path: /session/clear
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::clearSessionAction

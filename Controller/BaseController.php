@@ -69,7 +69,6 @@ class BaseController extends Controller
      */
     private function setYamlConfig($configName, $user, $reset = false, $columnPreset = -1)
     {
-        /** @var FileLocator $fileLocator */
         $configDirs = array(
             $this->getParameter('kernel.root_dir') . '/JBConfig/Entity',
             $this->getParameter('kernel.project_dir') . '/vendor/musicjerm/jermbundle/Resources/config/Entity'
@@ -84,6 +83,10 @@ class BaseController extends Controller
                 $configFile = $dir . "/$configName.yml";
                 break;
             }
+        }
+
+        if ($configFile === null){
+            throw new \Exception('JB Entity config file is missing.', 500);
         }
 
         $this->yamlConfig = Yaml::parse(file_get_contents($configFile));
