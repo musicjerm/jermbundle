@@ -3,6 +3,9 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use App\Entity\User;
+use Musicjerm\Bundle\JermBundle\Events\CrudCreateEvent;
+use Musicjerm\Bundle\JermBundle\Events\CrudUpdateEvent;
+use Musicjerm\Bundle\JermBundle\Events\CrudDeleteEvent;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -123,6 +126,8 @@ class CRUDController extends Controller
         // create new working object
         $entityClass = str_replace(':', '\Entity\\', $this->yamlConfig['entity']);
         $workingObject = new $entityClass;
+        $reflect = new \ReflectionClass($workingObject);
+        $entityClassName = $reflect->getShortName();
 
         // check for form class
         $normalizer = new CamelCaseToSnakeCaseNameConverter();
@@ -161,19 +166,13 @@ class CRUDController extends Controller
         // check for submitted files
         if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
             $workingObject->setDocument($workingObject->getFile()->getClientOriginalName());
-            $this->setFileSavePath($this->yamlConfig['entity']);
+            $this->setFileSavePath($entityClassName);
         }
 
         // set location if necessary
         if ($this->locationRestricted && method_exists($workingObject, 'setLocation') && method_exists($user, 'getLocation')){
             $workingObject->setLocation($user->getLocation());
         }
-
-        // set user created/updated and date created/updated if necessary
-        !method_exists($workingObject, 'setUserCreated') ?: $workingObject->setUserCreated($user);
-        !method_exists($workingObject, 'setUserUpdated') ?: $workingObject->setUserUpdated($user);
-        !method_exists($workingObject, 'setDateCreated') ?: $workingObject->setDateCreated(new \DateTime());
-        !method_exists($workingObject, 'setDateUpdated') ?: $workingObject->setDateUpdated(new \DateTime());
 
         // persist object
         $em = $this->getDoctrine()->getManager();
@@ -187,6 +186,11 @@ class CRUDController extends Controller
                 $workingObject->getFile()->move($fileSavePath, $workingObject->getFile()->getClientOriginalName());
             }
         }
+
+        // dispatch event for logging, etc
+        $event = new CrudCreateEvent($workingObject);
+        $dispatcher = $this->get('event_dispatcher');
+        $dispatcher->dispatch(CrudCreateEvent::NAME, $event);
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -216,6 +220,8 @@ class CRUDController extends Controller
         $em = $this->getDoctrine()->getManager();
         $entityClass = $this->yamlConfig['entity'];
         $workingObject = $em->find($entityClass, $id);
+        $reflect = new \ReflectionClass($workingObject);
+        $entityClassName = $reflect->getShortName();
 
         if (!$workingObject){
             throw new \Exception('Could not find object');
@@ -266,25 +272,19 @@ class CRUDController extends Controller
         // check for submitted files, delete old, save new
         if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
             $workingObject->setDocument($workingObject->getFile()->getClientOriginalName());
-            $this->setFileSavePath($this->yamlConfig['entity'], $workingObject->getId());
+            $this->setFileSavePath($entityClassName, $workingObject->getId());
             $fs = new Filesystem();
             $fs->remove($this->fileSavePath);
             $workingObject->getFile()->move($this->fileSavePath, $workingObject->getDocument());
         }
 
-        // set user created/updated and date created/updated if necessary
-        !method_exists($workingObject, 'setUserUpdated') ?: $workingObject->setUserUpdated($user);
-        !method_exists($workingObject, 'setDateUpdated') ?: $workingObject->setDateUpdated(new \DateTime());
-
-        // persist object
+        // flush database
         $em->flush();
 
-        /* log action
-        $message = '';
-        $message .= $this->yamlConfig['entity'];
-        !method_exists($workingObject, 'getId') ?: $message .= ' ('.$workingObject->getId().')';
-        !method_exists($workingObject, '__toString') ?: $message.= ' - '.$workingObject->__toString();
-        $this->logAction('Update', $message, $user);*/
+        // dispatch event for logging, etc
+        $event = new CrudUpdateEvent($workingObject);
+        $dispatcher = $this->get('event_dispatcher');
+        $dispatcher->dispatch(CrudUpdateEvent::NAME, $event);
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -321,6 +321,12 @@ class CRUDController extends Controller
                 );
             }
         }
+
+        // create new unused object
+        $entityClass = str_replace(':', '\Entity\\', $this->yamlConfig['entity']);
+        $unusedObject = new $entityClass;
+        $reflect = new \ReflectionClass($unusedObject);
+        $entityClassName = $reflect->getShortName();
 
         // loop and query objects
         $deleteCount = 0;
@@ -382,7 +388,7 @@ class CRUDController extends Controller
         foreach ($deleteArray as $key => $item){
             if ($item['delete']){
                 // check for files and delete them
-                $this->setFileSavePath($this->yamlConfig['entity'], $key);
+                $this->setFileSavePath($entityClassName, $key);
                 $fs = new Filesystem();
                 $fs->remove($this->fileSavePath);
 
@@ -411,11 +417,13 @@ class CRUDController extends Controller
 
         $em->flush();
 
-        /* log action
-        $message = '';
-        $message .= $this->yamlConfig['entity']." ($countRemoved)";
-        count($objectStrings) < 1 ?: $message .= " items: \n".implode("\n", $objectStrings);
-        $this->logAction('Delete', $message, $user);*/
+        // dispatch event for logging, etc
+        $event = new CrudDeleteEvent(array(
+            'class' => $entityClassName,
+            'deleted' => $objectStrings
+        ));
+        $dispatcher = $this->get('event_dispatcher');
+        $dispatcher->dispatch(CrudDeleteEvent::NAME, $event);
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -427,5 +435,3 @@ class CRUDController extends Controller
         ));
     }
 }
-
-//TODO: need events for logging - possible app component
