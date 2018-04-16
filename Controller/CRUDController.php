@@ -345,7 +345,7 @@ class CRUDController extends Controller
             // populate array with objects and titles
             $deleteArray[$id] = array(
                 'object' => $workingObject,
-                'string' => $workingObject->__toString(),
+                'string' => method_exists($workingObject, '__toString') ? $workingObject->__toString() : "$entityClassName $id",
                 'delete' => true
             );
 
