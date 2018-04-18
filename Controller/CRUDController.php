@@ -8,10 +8,13 @@ use Musicjerm\Bundle\JermBundle\Events\CrudUpdateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudDeleteEvent;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
@@ -368,8 +371,16 @@ class CRUDController extends Controller
                 'entry_type' => HiddenType::class,
                 'data' => $ids,
                 'label' => false
-            ))->getForm();
+            ));
 
+        if (method_exists($unusedObject, 'setDocument') and method_exists($unusedObject, 'getFile')){
+            $form->add('onlyRemoveFiles', CheckboxType::class, array(
+                'label' => 'Only remove uploaded documents',
+                'required' => false
+            ));
+        }
+
+        $form = $form->getForm();
         $form->handleRequest($request);
 
         // return form if hasn't been submitted or isn't valid
@@ -391,6 +402,7 @@ class CRUDController extends Controller
                 $this->setFileSavePath($entityClassName, $key);
                 $fs = new Filesystem();
                 $fs->remove($this->fileSavePath);
+                !method_exists($item['object'], 'setDocument') ?: $item['object']->setDocument(null);
 
                 // get object string for logging
                 $string = '';
@@ -398,8 +410,8 @@ class CRUDController extends Controller
                 !method_exists($item['object'], '__toString') ?: $string .= ' - '.$item['object']->__toString();
                 strlen($string) < 1 ?: $objectStrings[] = $string;
 
-                // remove object
-                $em->remove($item['object']);
+                // remove object unless only remove files is checked
+                $form->getData()['onlyRemoveFiles'] ?: $em->remove($item['object']);
                 $countRemoved++;
             }
         }
@@ -433,5 +445,43 @@ class CRUDController extends Controller
             'refresh' => true,
             'fade' => true
         ));
+    }
+
+    /**
+     * @param UserInterface|User $user
+     * @param $entity
+     * @param $id
+     * @return Response
+     * @throws \Exception
+     */
+    public function getFileAction(UserInterface $user, $entity, $id)
+    {
+        // set yaml config
+        $this->setYamlConfig($entity);
+
+        // query object
+        $id = urldecode($id);
+        $em = $this->getDoctrine()->getManager();
+        $entityClass = $this->yamlConfig['entity'];
+        $workingObject = $em->find($entityClass, $id);
+
+        if (!$workingObject){
+            throw new \Exception('Could not find object');
+        }
+
+        $reflect = new \ReflectionClass($workingObject);
+        $entityClassName = $reflect->getShortName();
+
+        // check permissions
+        $this->checkPermissions('item', 'jerm_bundle_get_file', $user, $workingObject);
+
+        $this->setFileSavePath($entityClassName, $workingObject->getId());
+
+        $file = $this->fileSavePath . $workingObject->getDocument();
+
+        $response = new BinaryFileResponse($file);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+
+        return $response;
     }
 }

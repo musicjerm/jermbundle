@@ -69,6 +69,10 @@ jerm_bundle_crud_delete:
     path: /crud/delete/{entity}
     controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::deleteAction
 
+jerm_bundle_get_file:
+    path: /crud/get_file/{entity}/{id}
+    controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::getFileAction
+
 jerm_bundle_clear_session:
     path: /session/clear
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::clearSessionAction
