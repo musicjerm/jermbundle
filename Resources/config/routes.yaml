@@ -73,6 +73,14 @@ jerm_bundle_get_file:
     path: /crud/get_file/{entity}/{id}
     controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::getFileAction
 
+jerm_bundle_importer_import:
+    path: /importer/import/{entity}
+    controller: Musicjerm\Bundle\JermBundle\Controller\ImporterController::importAction
+
+jerm_bundle_importer_get_template:
+    path: /importer/get_template/{entity}
+    controller: Musicjerm\Bundle\JermBundle\Controller\ImporterController::getTemplateAction
+
 jerm_bundle_clear_session:
     path: /session/clear
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::clearSessionAction

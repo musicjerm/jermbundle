@@ -2,7 +2,6 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
-use App\Entity\User;
 use Musicjerm\Bundle\JermBundle\Events\CrudCreateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudUpdateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudDeleteEvent;
@@ -80,7 +79,7 @@ class CRUDController extends Controller
     /**
      * @param string $actionType
      * @param string $actionName
-     * @param User $user
+     * @param $user
      * @param null $object
      */
     private function checkPermissions($actionType, $actionName, $user, $object = null)
@@ -113,7 +112,7 @@ class CRUDController extends Controller
 
     /**
      * @param Request $request
-     * @param UserInterface|User $user
+     * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
@@ -207,7 +206,7 @@ class CRUDController extends Controller
 
     /**
      * @param Request $request
-     * @param UserInterface|User $user
+     * @param UserInterface $user
      * @param string $entity
      * @param string $id
      * @return Response
@@ -301,7 +300,7 @@ class CRUDController extends Controller
 
     /**
      * @param Request $request
-     * @param UserInterface|User $user
+     * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
@@ -448,7 +447,7 @@ class CRUDController extends Controller
     }
 
     /**
-     * @param UserInterface|User $user
+     * @param UserInterface $user
      * @param $entity
      * @param $id
      * @return Response

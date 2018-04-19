@@ -1,0 +1,53 @@
+{% extends '@JermBundle/Modal/form.html.twig' %}
+
+{% block headers %}
+    Upload data for import ({{ entity }} Entity)
+{% endblock %}
+
+{% block form %}
+    {{ parent() }}
+    {% if truncate %}
+        <div class="callout callout-danger">
+            Existing data will be removed on upload.
+        </div>
+    {% else %}
+        <div class="callout callout-warning">
+            Existing items will be updated.  New items will be added.
+        </div>
+    {% endif %}
+    <p class="text text-info">
+        Please make sure your data contains the following columns:
+    </p>
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Column</th>
+            <th>Type</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key,val in structure %}
+            <tr>
+                <td class="text-muted">{{ loop.index }}</td>
+                <td>{{ val.name }}</td>
+                <td>
+                    {{ val.type }}
+                    {% if val.foreignKey %}
+                        ({{ val.foreignKey.table }}.{{ val.foreignKey.column }})
+                    {% elseif val.length %}
+                        ({{ val.length }})
+                    {% endif %}
+                </td>
+                <td class="text-orange">{% if val.primary == true %}<i class="fa fa-key"></i> Key{% endif %}</td>
+                <td class="text-maroon">{% if val.unique == true %}<i class="fa fa-file-text"></i> Unique{% endif %}</td>
+                <td class="text-blue">{% if val.required %}<i class="fa fa-asterisk"></i> Required{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a class="btn btn-link" href="{{ path('jerm_bundle_importer_get_template', { 'entity': entity }) }}">Download Template</a>
+{% endblock %}
