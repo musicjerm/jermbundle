@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Yaml\Yaml;
 
 class CRUDController extends Controller
@@ -73,7 +72,13 @@ class CRUDController extends Controller
             throw new \Exception('JB Entity config file is missing.', 500);
         }
 
+        // set private array
         $this->yamlConfig = Yaml::parse(file_get_contents($configFile));
+
+        // set class names
+        $reflectionClass = $this->getDoctrine()->getManager()->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
+        $this->yamlConfig['entity_class'] = $reflectionClass->getName();
+        $this->yamlConfig['entity_name'] = $reflectionClass->getShortName();
     }
 
     /**
@@ -126,15 +131,12 @@ class CRUDController extends Controller
         $this->checkPermissions('head', 'jerm_bundle_crud_create', $user);
 
         // create new working object
-        $entityClass = str_replace(':', '\Entity\\', $this->yamlConfig['entity']);
-        $workingObject = new $entityClass;
-        $reflect = new \ReflectionClass($workingObject);
-        $entityClassName = $reflect->getShortName();
+        $workingObject = new $this->yamlConfig['entity_class'];
 
-        // check for form class
-        $normalizer = new CamelCaseToSnakeCaseNameConverter();
-        $formTypeClass = "App\Form\CRUD\\" . ucfirst($normalizer->denormalize($entity)) . 'Type';
+        // set form class
+        $formTypeClass = "App\Form\CRUD\\" . $this->yamlConfig['entity_name'] . 'Type';
 
+        // make sure form class is valid
         if (!class_exists($formTypeClass)){
             throw new \Exception($formTypeClass.' is missing.');
         }
@@ -168,7 +170,7 @@ class CRUDController extends Controller
         // check for submitted files
         if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
             $workingObject->setDocument($workingObject->getFile()->getClientOriginalName());
-            $this->setFileSavePath($entityClassName);
+            $this->setFileSavePath($this->yamlConfig['entity_name']);
         }
 
         // set location if necessary
@@ -220,10 +222,7 @@ class CRUDController extends Controller
         // query object
         $id = urldecode($id);
         $em = $this->getDoctrine()->getManager();
-        $entityClass = $this->yamlConfig['entity'];
-        $workingObject = $em->find($entityClass, $id);
-        $reflect = new \ReflectionClass($workingObject);
-        $entityClassName = $reflect->getShortName();
+        $workingObject = $em->find($this->yamlConfig['entity'], $id);
 
         if (!$workingObject){
             throw new \Exception('Could not find object');
@@ -233,8 +232,7 @@ class CRUDController extends Controller
         $this->checkPermissions('item', 'jerm_bundle_crud_update', $user, $workingObject);
 
         // check for form class
-        $normalizer = new CamelCaseToSnakeCaseNameConverter();
-        $formTypeClass = "App\Form\CRUD\\".ucfirst($normalizer->denormalize($entity)).'Type';
+        $formTypeClass = "App\Form\CRUD\\" . $this->yamlConfig['entity_name'] . 'Type';
 
         if (!class_exists($formTypeClass)){
             throw new \Exception($formTypeClass.' is missing.');
@@ -274,7 +272,7 @@ class CRUDController extends Controller
         // check for submitted files, delete old, save new
         if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
             $workingObject->setDocument($workingObject->getFile()->getClientOriginalName());
-            $this->setFileSavePath($entityClassName, $workingObject->getId());
+            $this->setFileSavePath($this->yamlConfig['entity_name'], $workingObject->getId());
             $fs = new Filesystem();
             $fs->remove($this->fileSavePath);
             $workingObject->getFile()->move($this->fileSavePath, $workingObject->getDocument());
@@ -324,18 +322,11 @@ class CRUDController extends Controller
             }
         }
 
-        // create new unused object
-        $entityClass = str_replace(':', '\Entity\\', $this->yamlConfig['entity']);
-        $unusedObject = new $entityClass;
-        $reflect = new \ReflectionClass($unusedObject);
-        $entityClassName = $reflect->getShortName();
-
         // loop and query objects
         $deleteCount = 0;
         $deleteArray = array();
         foreach ($ids as $id){
-            $entityClass = $this->yamlConfig['entity'];
-            $workingObject = $em->find($entityClass, $id);
+            $workingObject = $em->find($this->yamlConfig['entity'], $id);
 
             if (!$workingObject){
                 throw new \Exception('Entity not found.');
@@ -347,7 +338,7 @@ class CRUDController extends Controller
             // populate array with objects and titles
             $deleteArray[$id] = array(
                 'object' => $workingObject,
-                'string' => method_exists($workingObject, '__toString') ? $workingObject->__toString() : "$entityClassName $id",
+                'string' => method_exists($workingObject, '__toString') ? $workingObject->__toString() : $this->yamlConfig['entity_name'] . " $id",
                 'delete' => true
             );
 
@@ -371,6 +362,9 @@ class CRUDController extends Controller
                 'data' => $ids,
                 'label' => false
             ));
+
+        // create new unused object
+        $unusedObject = new $this->yamlConfig['entity_class'];
 
         if (method_exists($unusedObject, 'setDocument') and method_exists($unusedObject, 'getFile')){
             $form->add('onlyRemoveFiles', CheckboxType::class, array(
@@ -398,7 +392,7 @@ class CRUDController extends Controller
         foreach ($deleteArray as $key => $item){
             if ($item['delete']){
                 // check for files and delete them
-                $this->setFileSavePath($entityClassName, $key);
+                $this->setFileSavePath($this->yamlConfig['entity_name'], $key);
                 $fs = new Filesystem();
                 $fs->remove($this->fileSavePath);
                 !method_exists($item['object'], 'setDocument') ?: $item['object']->setDocument(null);
@@ -430,7 +424,7 @@ class CRUDController extends Controller
 
         // dispatch event for logging, etc
         $event = new CrudDeleteEvent(array(
-            'class' => $entityClassName,
+            'class' => $this->yamlConfig['entity_name'],
             'deleted' => $objectStrings
         ));
         $dispatcher = $this->get('event_dispatcher');
@@ -461,20 +455,16 @@ class CRUDController extends Controller
         // query object
         $id = urldecode($id);
         $em = $this->getDoctrine()->getManager();
-        $entityClass = $this->yamlConfig['entity'];
-        $workingObject = $em->find($entityClass, $id);
+        $workingObject = $em->find($this->yamlConfig['entity'], $id);
 
         if (!$workingObject){
             throw new \Exception('Could not find object');
         }
 
-        $reflect = new \ReflectionClass($workingObject);
-        $entityClassName = $reflect->getShortName();
-
         // check permissions
         $this->checkPermissions('item', 'jerm_bundle_get_file', $user, $workingObject);
 
-        $this->setFileSavePath($entityClassName, $workingObject->getId());
+        $this->setFileSavePath($this->yamlConfig['entity_name'], $workingObject->getId());
 
         $file = $this->fileSavePath . $workingObject->getDocument();
 

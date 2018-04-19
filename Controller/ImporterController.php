@@ -53,7 +53,13 @@ class ImporterController extends Controller
             throw new \Exception('JB Entity config file is missing.', 500);
         }
 
+        // set private array
         $this->yamlConfig = Yaml::parse(file_get_contents($configFile));
+
+        // set class names
+        $reflectionClass = $this->getDoctrine()->getManager()->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
+        $this->yamlConfig['entity_class'] = $reflectionClass->getName();
+        $this->yamlConfig['entity_name'] = $reflectionClass->getShortName();
 
         // make sure import config is set
         if (!isset($this->yamlConfig['import'])){
@@ -83,18 +89,15 @@ class ImporterController extends Controller
 
         // entity manager
         $em = $this->getDoctrine()->getManager();
-        $reflect = $em->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
-        $entityClass = $reflect->getName();
-        $entityName = $reflect->getShortName();
 
         /** @var $sm MySqlSchemaManager */
         $sm = $this->get('database_connection')->getSchemaManager();
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
-        $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($entityName)));
+        $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));
 
         // set column indexes
         $columnIndexes = array();
-        foreach ($sm->listTableIndexes($nameConverter->normalize(lcfirst($entityName))) as $index){
+        foreach ($sm->listTableIndexes($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name']))) as $index){
             if (!isset($columnIndexes[$index->getColumns()[0]])){
                 $columnIndexes[$index->getColumns()[0]] = array();
             }
@@ -108,7 +111,7 @@ class ImporterController extends Controller
 
         // set foreign keys if any
         $columnFks = array();
-        foreach ($sm->listTableForeignKeys($nameConverter->normalize(lcfirst($entityName))) as $foreignKey){
+        foreach ($sm->listTableForeignKeys($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name']))) as $foreignKey){
             $columnFks[$nameConverter->denormalize($foreignKey->getLocalColumns()[0])] = array(
                 'table'=>$foreignKey->getForeignTableName(),
                 'column'=>$foreignKey->getForeignColumns()[0]
@@ -217,7 +220,7 @@ class ImporterController extends Controller
 
                     $lineChanges = 0;
                     if (null === $workingObject && count($search) == count($this->importConfig['keys'])){
-                        $workingObject = new $entityClass;
+                        $workingObject = new $this->yamlConfig['entity_class'];
                         foreach ($this->importConfig['headers'] as $pos=>$headerKey){//parse entity setters
                             if (strlen($dataLine[$pos]) > 0){
                                 switch($structureArray[$headerKey]->getType()){//type checking
@@ -324,7 +327,7 @@ class ImporterController extends Controller
             // dispatch event for logging
             if ($countNew > 0 || $countUpdated > 0){
                 $event = new ImporterImportEvent(array(
-                    'class' => $entityName,
+                    'class' => $this->yamlConfig['entity_name'],
                     'new' => $countNew,
                     'updated' => $countUpdated
                 ));
@@ -355,7 +358,7 @@ class ImporterController extends Controller
             'form'=>$form->createView(),
             'structure'=>$structureArray,
             'action'=>'create',
-            'header'=>"Upload data for import ($entityName Entity)"
+            'header'=>'Upload data for import (' . $this->yamlConfig['entity_name'] . ' Entity)'
         ));
     }
 
