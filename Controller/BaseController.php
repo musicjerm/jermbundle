@@ -556,7 +556,7 @@ class BaseController extends Controller
             $filtersForm = $this->createFiltersForm($entity, $user);
         }else{
             $filtersForm = $this->createForm(BlankFilterType::class, null, array(
-                'action' => $this->generateUrl('data_get_csv', ['entity' => $entity, 'columnPreset' => $column_preset])
+                'action' => $this->generateUrl('jerm_bundle_data_get_csv', ['entity' => $entity, 'columnPreset' => $column_preset])
             ));
         }
 
