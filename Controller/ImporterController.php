@@ -3,6 +3,8 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
+use Musicjerm\Bundle\JermBundle\Events\ImporterImportEvent;
+use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Model\ImporterModel;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -247,7 +249,7 @@ class ImporterController extends Controller
                             }
                         }
                         if ($lineChanges > 0){
-                            // TODO: set user created in listener, set date created and updated as prepersist lifecycle callback
+                            // set user and date created if methods exist
                             !method_exists($workingObject, 'setUserCreated') ?: $workingObject->setUserCreated($user);
                             !method_exists($workingObject, 'setDateCreated') ?: $workingObject->setDateCreated(new \DateTime());
                             $countNew++;
@@ -298,9 +300,9 @@ class ImporterController extends Controller
                     }
 
                     if ($lineChanges > 0){
-                        // TODO: set date updated as preupdate lifecycle callback, set user updated in listener
-                        $workingObject->setUserUpdated($user);
-                        $workingObject->setDateUpdated(new \DateTime());
+                        // set user and date updated if methods exist
+                        !method_exists($workingObject, 'setUserUpdated') ?: $workingObject->setUserUpdated($user);
+                        !method_exists($workingObject, 'setDateUpdated') ?: $workingObject->setDateUpdated(new \DateTime());
                         $em->persist($workingObject);
                     }
 
@@ -319,17 +321,16 @@ class ImporterController extends Controller
 
             $message = "Upload successful.  ($countNew) New items.  ($countUpdated) Updated items.";
 
-            // TODO dispatch event for logging
-            /*
+            // dispatch event for logging
             if ($countNew > 0 || $countUpdated > 0){
-                $logObject = new ActionLog();
-                $logObject->setAction('Import');
-                $logObject->setDetail("$entityName ($countNew) New items.  ($countUpdated) Updated items.");
-                $logObject->setUserCreated($user);
-                $logObject->setDateCreated(new \DateTime('now'));
-                $em->persist($logObject);
-                $em->flush();
-            }*/
+                $event = new ImporterImportEvent(array(
+                    'class' => $entityName,
+                    'new' => $countNew,
+                    'updated' => $countUpdated
+                ));
+                $dispatcher = $this->get('event_dispatcher');
+                $dispatcher->dispatch(ImporterImportEvent::NAME, $event);
+            }
 
             return $this->render('@JermBundle/Modal/notification.html.twig', array(
                 'message' => $message,
@@ -356,5 +357,36 @@ class ImporterController extends Controller
             'action'=>'create',
             'header'=>"Upload data for import ($entityName Entity)"
         ));
+    }
+
+    /**
+     * @param string $entity
+     * @return Response
+     * @throws \Exception
+     */
+    public function getTemplateAction($entity)
+    {
+        // set yaml config
+        $this->setYamlConfig($entity);
+
+        $nameConverter = new CamelCaseToSnakeCaseNameConverter();
+        $dataHeaders = array();
+        foreach ($this->yamlConfig['import']['headers'] as $value){
+            $dataHeaders[] = ucwords(str_replace('_', ' ', $nameConverter->normalize($value)));
+        }
+
+        // build csv data
+        $dumpModel = new CSVDataModel();
+        $dumpModel->setColumnNames($dataHeaders);
+        $dumpModel->setData(array());
+        $dataDump = $dumpModel->buildCsv();
+
+        // return to user
+        $newFileName = getenv('app_name').'_'.ucfirst($entity).'_import_template.csv';
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="'.$newFileName);
+        $response->setContent($dataDump);
+        return $response;
     }
 }
