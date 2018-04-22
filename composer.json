@@ -1,7 +1,7 @@
 {
     "name": "musicjerm/jermbundle",
-    "description": "JermBundle Library for Symfony 4 projects",
     "type": "symfony-bundle",
+    "description": "JermBundle Library for Symfony 4 projects",
     "autoload": {
         "psr-4": { "Musicjerm\\Bundle\\JermBundle\\": "" }
     }

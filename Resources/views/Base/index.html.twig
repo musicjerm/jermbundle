@@ -1,5 +1,5 @@
-{% if app.user().jermBundleSkin is defined and app.user().jermBundleSkin %}
-    {% set active_skin = app.user().jermBundleSkin %}
+{% if app.user().settingSkin is defined and app.user().settingSkin %}
+    {% set active_skin = app.user().settingSkin %}
 {% else %}
     {% set active_skin = 'skin-blue' %}
 {% endif %}
