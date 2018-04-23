@@ -853,6 +853,7 @@ class BaseController extends Controller
      * @param Request $request
      * @param UserInterface|null $user
      * @return Response
+     * @throws \Exception
      */
     public function navAction(Request $request, UserInterface $user = null)
     {
@@ -881,14 +882,12 @@ class BaseController extends Controller
 
         $navModel->buildNav();
 
-        $debugMessage = null;
-        if (empty($navModel->getNavOutput() && $this->getParameter('kernel.environment') == 'dev')){
-            $debugMessage = 'Please configure ' . $configDir . '/Nav.yaml';
+        if (empty($navModel->getNavOutput()) && $this->getParameter('kernel.environment') === 'dev'){
+            throw new \Exception('Please configure ' . $configDir . '/Nav.yaml');
         }
 
         return $this->render('@JermBundle/Base/nav.html.twig', array(
-            'nav' => $navModel->getNavOutput(),
-            'debug_message' => $debugMessage
+            'nav' => $navModel->getNavOutput()
         ));
     }
 
