@@ -385,7 +385,7 @@ class ImporterController extends Controller
         $dataDump = $dumpModel->buildCsv();
 
         // return to user
-        $newFileName = getenv('app_name').'_'.ucfirst($entity).'_import_template.csv';
+        $newFileName = $this->getParameter('app_name').'_'.ucfirst($entity).'_import_template.csv';
         $response = new Response();
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment; filename="'.$newFileName);

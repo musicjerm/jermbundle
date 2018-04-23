@@ -649,7 +649,7 @@ class BaseController extends Controller
 
         // return to user
         $date = new \DateTime('now');
-        $newFileName = getenv('app_name').'_'.ucfirst($entity).'_Export_'.$date->format('Y-m-d');
+        $newFileName = $this->getParameter('app_name').'_'.ucfirst($entity).'_Export_'.$date->format('Y-m-d');
         $response = new Response();
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment; filename="'.$newFileName.'.csv"');
