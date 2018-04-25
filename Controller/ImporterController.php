@@ -126,7 +126,7 @@ class ImporterController extends Controller
             if (isset($columnFks[$ic])){
                 $structureArray[$ic]->setType('Entity');
                 $structureArray[$ic]->setForeignKey($columnFks[$ic]);
-                $structureArray[$ic]->setRepo($em->getRepository('AppBundle:'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table']))));
+                $structureArray[$ic]->setRepo($em->getRepository('App:'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table']))));
             }else{
                 $structureArray[$ic]->setType($columnList[$nameConverter->normalize($ic)]->getType());
             }
@@ -196,9 +196,9 @@ class ImporterController extends Controller
                             if (strlen($dataLine[$importKey]) > 0){
                                 if ($structureArray[$this->importConfig['headers'][$importKey]]->getType() == 'Entity'){
                                     if (isset($this->importConfig['entity_names']) && isset($this->importConfig['entity_names'][$this->importConfig['headers'][$importKey]])){
-                                        $searchEntity = 'AppBundle:'.$this->importConfig['entity_names'][$this->importConfig['headers'][$importKey]];
+                                        $searchEntity = 'App:'.$this->importConfig['entity_names'][$this->importConfig['headers'][$importKey]];
                                     }else{
-                                        $searchEntity = 'AppBundle:'.ucfirst($this->importConfig['headers'][$importKey]);
+                                        $searchEntity = 'App:'.ucfirst($this->importConfig['headers'][$importKey]);
                                     }
                                     $importKeyEntity = $em->find("$searchEntity", $dataLine[$importKey]);
                                     if (null !== $importKeyEntity){
