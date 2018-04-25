@@ -40,7 +40,7 @@ class CRUDController extends Controller
      * @param string $entity
      * @param string $id
      */
-    public function setFileSavePath($entity, $id = null)
+    public function setFileSavePath($entity, $id = null): void
     {
         $this->fileSavePath = $this->getParameter('kernel.project_dir')."/uploads/$entity/";
         !$id ?: $this->fileSavePath .= "$id/";
@@ -50,7 +50,7 @@ class CRUDController extends Controller
      * @param string $configName
      * @throws \Exception
      */
-    private function setYamlConfig($configName)
+    private function setYamlConfig($configName): void
     {
         $configDirs = array(
             $this->getParameter('kernel.root_dir') . '/JBConfig/Entity',
@@ -62,7 +62,9 @@ class CRUDController extends Controller
             if (file_exists($dir . "/$configName.yaml")){
                 $configFile = $dir . "/$configName.yaml";
                 break;
-            }elseif (file_exists($dir . "/$configName.yml")){
+            }
+
+            if (file_exists($dir . "/$configName.yml")){
                 $configFile = $dir . "/$configName.yml";
                 break;
             }
@@ -86,8 +88,10 @@ class CRUDController extends Controller
      * @param string $actionName
      * @param $user
      * @param null $object
+     * @throws AccessDeniedException
+     * @throws \LogicException
      */
-    private function checkPermissions($actionType, $actionName, $user, $object = null)
+    private function checkPermissions($actionType, $actionName, $user, $object = null): void
     {
         if (!$this->isGranted($this->yamlConfig['actions'][$actionType][$actionName]['role'])){
             throw new AccessDeniedException();
@@ -122,7 +126,7 @@ class CRUDController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function createAction(Request $request, UserInterface $user, $entity)
+    public function createAction(Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -155,7 +159,7 @@ class CRUDController extends Controller
         if (!$form->isSubmitted() || !$form->isValid()){
             $frontLoadFiles = array();
             if (isset($this->yamlConfig['actions']['head']['jerm_bundle_crud_create']['front_load'])){
-                foreach ($this->yamlConfig['actions']['head']['jerm_bundle_crud_create']['front_load'] as $jsFile){
+                foreach ((array) $this->yamlConfig['actions']['head']['jerm_bundle_crud_create']['front_load'] as $jsFile){
                     $frontLoadFiles[] = $jsFile;
                 }
             }
@@ -184,11 +188,15 @@ class CRUDController extends Controller
         $em->flush();
 
         // save submitted file with new entity ID
-        if (method_exists($workingObject, 'getId') && $workingObject->getId()){
-            if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
-                $fileSavePath = $this->fileSavePath.$workingObject->getId();
-                $workingObject->getFile()->move($fileSavePath, $workingObject->getFile()->getClientOriginalName());
-            }
+        if (
+            method_exists($workingObject, 'getId') &&
+            $workingObject->getId() &&
+            method_exists($workingObject, 'setDocument') &&
+            method_exists($workingObject, 'getFile') &&
+            $workingObject->getFile()
+        ){
+            $fileSavePath = $this->fileSavePath.$workingObject->getId();
+            $workingObject->getFile()->move($fileSavePath, $workingObject->getFile()->getClientOriginalName());
         }
 
         // dispatch event for logging, etc
@@ -214,7 +222,7 @@ class CRUDController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function updateAction(Request $request, UserInterface $user, $entity, $id)
+    public function updateAction(Request $request, UserInterface $user, $entity, $id): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -252,7 +260,7 @@ class CRUDController extends Controller
         if (!$form->isSubmitted() || !$form->isValid()){
             $frontLoadFiles = array();
             if (isset($this->yamlConfig['actions']['item']['jerm_bundle_crud_update']['front_load'])){
-                foreach ($this->yamlConfig['actions']['item']['jerm_bundle_crud_update']['front_load'] as $jsFile){
+                foreach ((array) $this->yamlConfig['actions']['item']['jerm_bundle_crud_update']['front_load'] as $jsFile){
                     $frontLoadFiles[] = $jsFile;
                 }
             }
@@ -303,7 +311,7 @@ class CRUDController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function deleteAction(Request $request, UserInterface $user, $entity)
+    public function deleteAction(Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -314,7 +322,7 @@ class CRUDController extends Controller
         // set any constraints that might exist
         $constraints = array();
         if (isset($this->yamlConfig['actions']['group']['jerm_bundle_crud_delete']['constraints'])){
-            foreach ($this->yamlConfig['actions']['group']['jerm_bundle_crud_delete']['constraints'] as $constraint){
+            foreach ((array) $this->yamlConfig['actions']['group']['jerm_bundle_crud_delete']['constraints'] as $constraint){
                 $constraints[] = array(
                     'repo' => $em->getRepository($constraint['entity']),
                     'field' => $constraint['field']
@@ -366,7 +374,7 @@ class CRUDController extends Controller
         // create new unused object
         $unusedObject = new $this->yamlConfig['entity_class'];
 
-        if (method_exists($unusedObject, 'setDocument') and method_exists($unusedObject, 'getFile')){
+        if (method_exists($unusedObject, 'setDocument') && method_exists($unusedObject, 'getFile')){
             $form->add('onlyRemoveFiles', CheckboxType::class, array(
                 'label' => 'Only remove uploaded documents',
                 'required' => false
@@ -415,7 +423,7 @@ class CRUDController extends Controller
         if ($countRemoved < 1){
             return $this->render('@JermBundle/Modal/notification.html.twig', array(
                 'modal_size' => 'modal-sm',
-                'message' => "No items removed.",
+                'message' => 'No items removed.',
                 'type' => 'info',
                 'refresh' => true,
                 'fade' => true
@@ -449,7 +457,7 @@ class CRUDController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function getFileAction(UserInterface $user, $entity, $id)
+    public function getFileAction(UserInterface $user, $entity, $id): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
