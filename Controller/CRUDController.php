@@ -401,10 +401,12 @@ class CRUDController extends Controller
                 $string = '';
                 !method_exists($item['object'], 'getId') ?: $string .= '('.$item['object']->getId().')';
                 !method_exists($item['object'], '__toString') ?: $string .= ' - '.$item['object']->__toString();
-                strlen($string) < 1 ?: $objectStrings[] = $string;
+                $string === '' ?: $objectStrings[] = $string;
 
                 // remove object unless only remove files is checked
-                $form->getData()['onlyRemoveFiles'] ?: $em->remove($item['object']);
+                if (!isset($form->getData()['onlyRemoveFiles']) || $form->getData()['onlyRemoveFiles'] === false){
+                    $em->remove($item['object']);
+                }
                 $countRemoved++;
             }
         }
