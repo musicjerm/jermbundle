@@ -22,7 +22,7 @@ class NotificationRepository extends EntityRepository
         return $qb->getQuery();
     }
 
-    public function countUnread($user)
+    public function countUnread($user): array
     {
         $qb = $this->createQueryBuilder('n')
             ->addSelect('COUNT(n.id)')

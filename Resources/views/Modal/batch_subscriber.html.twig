@@ -1,0 +1,18 @@
+{% extends '@JermBundle/Modal/form.html.twig' %}
+
+{% block form %}
+    {{ parent() }}
+    <div class="callout callout-warning">Subscribers will be created for the following line(s).</div>
+    <div class="table-responsive">
+        <table class="table table-condensed">
+            <tbody>
+            {% for line in entity_lines %}
+                <tr>
+                    <td class="text-muted">{{ loop.index }}</td>
+                    <td>{{ line }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

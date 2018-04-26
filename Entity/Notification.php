@@ -2,6 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Entity;
 
+use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -220,7 +221,7 @@ class Notification
      */
     public function getStatus()
     {
-        return $this->getUnread() ? "Unread" : "Read";
+        return $this->getUnread() ? 'Unread' : 'Read';
     }
 
     /**
@@ -231,9 +232,9 @@ class Notification
     {
         if ($this->getUnread()){
             return $this->getSubject() . ' (unread)';
-        }else{
-            return $this->getSubject();
         }
+
+        return $this->getSubject();
     }
 
     /**
