@@ -233,7 +233,10 @@ class CRUDController extends Controller
         $workingObject = $em->find($this->yamlConfig['entity'], $id);
 
         if (!$workingObject){
-            throw new \Exception('Could not find object');
+            return $this->render('@JermBundle/Modal/notification.html.twig', array(
+                'type' => 'error',
+                'message' => 'Could not find item.  Has it been deleted?'
+            ));
         }
 
         // check permissions
@@ -243,7 +246,10 @@ class CRUDController extends Controller
         $formTypeClass = "App\Form\CRUD\\" . $this->yamlConfig['entity_name'] . 'Type';
 
         if (!class_exists($formTypeClass)){
-            throw new \Exception($formTypeClass.' is missing.');
+            return $this->render('@JermBundle/Modal/notification.html.twig', array(
+                'type' => 'error',
+                'message' => 'Form type class is missing.  Please contact an Admin.'
+            ));
         }
 
         // create form
