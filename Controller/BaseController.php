@@ -244,8 +244,8 @@ class BaseController extends Controller
     public function indexAction(UserInterface $user = null, $entity, $column_preset, $filter_preset)
     {
         // redirect to login if user accidentally signed out
-        if ($entity === "{{ path('login') }}"){
-            return $this->redirectToRoute('login');
+        if (\in_array($entity, ["{{ path('login') }}", "{{ path('Login_route') }}"])){
+            return $this->redirectToRoute('homepage');
         }
 
         // configure defaults
