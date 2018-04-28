@@ -1,0 +1,29 @@
+entity: 'JermBundle:Commit'
+role: 'ROLE_USER'
+page_name: 'Git Repository Commits'
+
+columns:
+    - { title: 'ID', data: 'id', sort: 'c.id'}
+    - { title: 'Commit', data: 'commit', sort: 'c.commit' }
+    - { title: 'Notes', data: 'notes', sort: 'c.notes' }
+    - { title: 'Date', data: 'dateString', sort: 'c.date' }
+    - { title: 'Author', data: 'author', sort: 'c.author' }
+
+view: [0, 1, 3, 4]
+tooltip: [-1, 2, -1, -1, -1]
+
+sortId: 0
+sortDir: 'desc'
+
+filters:
+    -
+        name: 'Search'
+        type: 'Text'
+
+actions:
+    head:
+#        git_commit_read:
+#            role: 'ROLE_ADMIN'
+#            btn: 'btn-info'
+#            icon: 'fa-refresh'
+#            text: 'Refresh Commits'
