@@ -43,11 +43,16 @@
             <div class="nav navbar-custom-menu">
                 <ul class="nav navbar-nav">
                     {% block heading_list %}
-                        <li class="dropdown notifications-menu">
-                            {% if app.user is not null %}
+
+                        {% if app.user is defined and app.user is not null %}
+
+                            {{ render(controller('App\\Controller\\HeaderController::headAction')) }}
+
+                            <li class="dropdown notifications-menu">
                                 {{ render(controller('JermBundle:Base:message')) }}
-                            {% endif %}
-                        </li>
+                            </li>
+
+                        {% endif %}
 
                         <li class="dropdown user user-menu">
                             {% if app.user %}
