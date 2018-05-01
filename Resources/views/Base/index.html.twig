@@ -46,7 +46,7 @@
 
                         {% if app.user is defined and app.user is not null %}
 
-                            {{ render(controller('App\\Controller\\HeaderController::headAction')) }}
+                            {{ render(controller('App\\Controller\\HeaderController::renderAction')) }}
 
                             <li class="dropdown notifications-menu">
                                 {{ render(controller('JermBundle:Base:message')) }}
