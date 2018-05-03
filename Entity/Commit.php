@@ -47,7 +47,7 @@ class Commit
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -58,9 +58,14 @@ class Commit
         return $this;
     }
 
-    public function getCommit()
+    public function getCommit(): string
     {
         return $this->commit;
+    }
+
+    public function getShortCommit(): string
+    {
+        return substr($this->commit, 0, 7);
     }
 
     public function setAuthor($author)
@@ -69,7 +74,7 @@ class Commit
         return $this;
     }
 
-    public function getAuthor()
+    public function getAuthor(): string
     {
         return $this->author;
     }
@@ -80,7 +85,7 @@ class Commit
         return $this;
     }
 
-    public function getNotes()
+    public function getNotes(): string
     {
         return $this->notes;
     }
@@ -91,12 +96,12 @@ class Commit
         return $this;
     }
 
-    public function getDate()
+    public function getDate(): \DateTime
     {
         return $this->date;
     }
 
-    public function getDateString()
+    public function getDateString(): string
     {
         return $this->getDate()->format('Y-m-d h:i a');
     }
