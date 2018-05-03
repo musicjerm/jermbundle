@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Class Commit
  *
- * @ORM\Table(name="commit")
+ * @ORM\Table(name="git_commit")
  * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\CommitRepository")
  */
 class Commit
