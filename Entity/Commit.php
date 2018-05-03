@@ -22,6 +22,12 @@ class Commit
 
     /**
      * @var string
+     * @ORM\Column(name="git_repo", type="string", length=128)
+     */
+    private $gitRepo;
+
+    /**
+     * @var string
      * @ORM\Column(name="commit", type="string", length=128)
      */
     private $commit;
@@ -50,6 +56,17 @@ class Commit
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function setGitRepo($gitRepo)
+    {
+        $this->gitRepo = $gitRepo;
+        return $this;
+    }
+
+    public function getGitRepo(): string
+    {
+        return $this->gitRepo;
     }
 
     public function setCommit($commit)
