@@ -215,8 +215,14 @@ class BaseController extends Controller
                     if (isset($filter['entity_group']) && $filter['entity_group'] == true){
                         $er = $this->getDoctrine()->getRepository($filter['entity_class']);
                         $query = $filter['entity_query'];
-                        foreach ($er->$query() as $val){
-                            $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
+                        if (isset($filter['restrict_location']) && $filter['restrict_location'] == true){
+                            foreach ($er->$query($this->user->getLocation()) as $val){
+                                $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
+                            }
+                        }else{
+                            foreach ($er->$query() as $val){
+                                $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
+                            }
                         }
                     }
                     $filtersForm->add($filter['name'], ChoiceType::class, $filter['array']);
