@@ -8,9 +8,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DtConfig
- *
- * @ORM\Table(name="dt_config")
  * @ORM\Entity()
  * @UniqueEntity(
  *     fields={"user", "name", "entity"}, message="You already have a preset with this name.",
@@ -21,8 +18,7 @@ class DtConfig
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -30,13 +26,13 @@ class DtConfig
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      * @Assert\NotBlank()
      */
     private $name;
 
     /**
+     * @var User
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(name="user", referencedColumnName="id")
      */
@@ -44,300 +40,170 @@ class DtConfig
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="entity", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      */
     private $entity;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="sort_id", type="integer")
+     * @var int
+     * @ORM\Column(type="integer")
      */
     private $sortId;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="sort_dir", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      */
     private $sortDir;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="view", type="simple_array")
+     * @ORM\Column(type="simple_array")
      * @Assert\NotBlank(message="Please select at least (1) column for view.")
      */
     private $view;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="data_dump", type="simple_array")
+     * @ORM\Column(type="simple_array")
      * @Assert\NotBlank(message="Please select at least (1) column for csv dump.")
      */
     private $dataDump;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="tooltip", type="simple_array")
+     * @ORM\Column(type="simple_array")
      */
     private $tooltip;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="col_order", type="simple_array")
+     * @ORM\Column(type="simple_array")
      */
     private $colOrder;
 
     /**
-     * @var boolean
-     * @ORM\Column(name="is_primary", type="boolean")
+     * @var bool
+     * @ORM\Column(type="boolean")
      */
     private $isPrimary;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name ?: 'Default';
     }
 
-    /**
-     * Get id
-     *
-     * @return int
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * Set name
-     * @param string $name
-     * @return DtConfig
-     */
-    public function setName($name)
+    public function setName(string $name): self
     {
         $this->name = $name;
         return $this;
     }
 
-    /**
-     * Get name
-     * @return string
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Set user
-     *
-     * @param User $user
-     *
-     * @return DtConfig
-     */
-    public function setUser($user)
+    public function setUser(User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * Set entity
-     *
-     * @param string $entity
-     *
-     * @return DtConfig
-     */
-    public function setEntity($entity)
+    public function setEntity(string $entity): self
     {
         $this->entity = $entity;
-
         return $this;
     }
 
-    /**
-     * Get entity
-     *
-     * @return string
-     */
-    public function getEntity()
+    public function getEntity(): string
     {
         return $this->entity;
     }
 
-    /**
-     * Set sortId
-     * @param int $sortId
-     * @return DtConfig
-     */
-    public function setSortId($sortId)
+    public function setSortId(int $sortId): self
     {
         $this->sortId = $sortId;
         return $this;
     }
 
-    /**
-     * Get sortId
-     * @return int
-     */
-    public function getSortId()
+    public function getSortId(): int
     {
         return $this->sortId;
     }
 
-    /**
-     * Set sortDir
-     *
-     * @param string $sortDir
-     *
-     * @return DtConfig
-     */
-    public function setSortDir($sortDir)
+    public function setSortDir(string $sortDir): self
     {
         $this->sortDir = $sortDir;
-
         return $this;
     }
 
-    /**
-     * Get sortDir
-     *
-     * @return string
-     */
-    public function getSortDir()
+    public function getSortDir(): string
     {
         return $this->sortDir;
     }
 
-    /**
-     * Set view
-     *
-     * @param array $view
-     *
-     * @return DtConfig
-     */
-    public function setView($view)
+    public function setView(array $view): self
     {
         $this->view = $view;
-
         return $this;
     }
 
-    /**
-     * Get view
-     *
-     * @return array
-     */
-    public function getView()
+    public function getView(): array
     {
         return $this->view;
     }
 
-    /**
-     * Set dataDump
-     *
-     * @param array $dataDump
-     *
-     * @return DtConfig
-     */
-    public function setDataDump($dataDump)
+    public function setDataDump(array $dataDump): self
     {
         $this->dataDump = $dataDump;
-
         return $this;
     }
 
-    /**
-     * Get dataDump
-     *
-     * @return array
-     */
-    public function getDataDump()
+    public function getDataDump(): array
     {
         return $this->dataDump;
     }
 
-    /**
-     * Set tooltip
-     *
-     * @param array $tooltip
-     *
-     * @return DtConfig
-     */
-    public function setTooltip($tooltip)
+    public function setTooltip(array $tooltip): self
     {
         $this->tooltip = $tooltip;
-
         return $this;
     }
 
-    /**
-     * Get tooltip
-     *
-     * @return array
-     */
-    public function getTooltip()
+    public function getTooltip(): array
     {
         return $this->tooltip;
     }
 
-    /**
-     * Set tooltip
-     *
-     * @param array $colOrder
-     *
-     * @return DtConfig
-     */
-    public function setColOrder($colOrder)
+    public function setColOrder(array $colOrder): self
     {
         $this->colOrder = $colOrder;
-
         return $this;
     }
 
-    /**
-     * Get colOrder
-     *
-     * @return array
-     */
-    public function getColOrder()
+    public function getColOrder(): array
     {
         return $this->colOrder;
     }
 
-    /**
-     * Set isPrimary
-     * @param boolean $isPrimary
-     * @return DtConfig
-     */
-    public function setIsPrimary($isPrimary)
+    public function setIsPrimary(bool $isPrimary): self
     {
         $this->isPrimary = $isPrimary;
         return $this;
     }
 
-    /**
-     * Get isPrimary
-     * @return boolean
-     */
-    public function getIsPrimary()
+    public function getIsPrimary(): bool
     {
         return $this->isPrimary;
     }

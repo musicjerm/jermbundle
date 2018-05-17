@@ -2,6 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Form;
 
+use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -40,7 +41,7 @@ class BatchSubscriberModel
      * @param array $id
      * @return BatchSubscriberModel
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
         return $this;
@@ -50,7 +51,7 @@ class BatchSubscriberModel
      * Get id
      * @return array
      */
-    public function getId()
+    public function getId(): array
     {
         return $this->id;
     }
@@ -60,7 +61,7 @@ class BatchSubscriberModel
      * @param User[] $users
      * @return BatchSubscriberModel
      */
-    public function setUsers($users)
+    public function setUsers($users): self
     {
         $this->users = $users;
         return $this;
@@ -70,7 +71,7 @@ class BatchSubscriberModel
      * Get users
      * @return User[]
      */
-    public function getUsers()
+    public function getUsers(): array
     {
         return $this->users;
     }
@@ -80,7 +81,7 @@ class BatchSubscriberModel
      * @param bool $email
      * @return BatchSubscriberModel
      */
-    public function setEmail($email)
+    public function setEmail($email): self
     {
         $this->email = $email;
         return $this;
@@ -90,7 +91,7 @@ class BatchSubscriberModel
      * Get email
      * @return bool
      */
-    public function getEmail()
+    public function getEmail(): bool
     {
         return $this->email;
     }
@@ -100,7 +101,7 @@ class BatchSubscriberModel
      * @param bool $system
      * @return BatchSubscriberModel
      */
-    public function setSystem($system)
+    public function setSystem($system): self
     {
         $this->system = $system;
         return $this;
@@ -110,7 +111,7 @@ class BatchSubscriberModel
      * Get system
      * @return bool
      */
-    public function getSystem()
+    public function getSystem(): bool
     {
         return $this->system;
     }

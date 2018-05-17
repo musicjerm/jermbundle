@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class BatchSubscriberType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if ($options['is_manager']){
             $builder->add('users', EntityType::class, array(
@@ -42,10 +42,10 @@ class BatchSubscriberType extends AbstractType
             ->add('system', CheckboxType::class, ['required' => false]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
-            'data_class' => 'Musicjerm\Bundle\JermBundle\Form\BatchSubscriberModel',
+            'data_class' => BatchSubscriberModel::class,
             'is_manager' => false
         ));
     }

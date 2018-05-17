@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class CrudDeleteEvent extends Event
 {
-    const NAME = 'jermbundle.crud_delete';
+    public const NAME = 'jermbundle.crud_delete';
 
     protected $object;
 

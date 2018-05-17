@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class SubscriberBatchEvent extends Event
 {
-    const NAME = 'jermbundle.subscriber_batch';
+    public const NAME = 'jermbundle.subscriber_batch';
 
     protected $object;
 

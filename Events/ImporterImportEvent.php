@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class ImporterImportEvent extends Event
 {
-    const NAME = 'jermbundle.importer_import';
+    public const NAME = 'jermbundle.importer_import';
 
     protected $object;
 

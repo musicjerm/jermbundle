@@ -8,9 +8,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
- * Subscriber
- *
- * @ORM\Table(name="subscriber")
  * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\SubscriberRepository")
  * @UniqueEntity(fields={"entity", "entityId", "user"}, message="User has already subscribed to this item")
  * @Assert\Expression(
@@ -23,8 +20,7 @@ class Subscriber
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -32,26 +28,24 @@ class Subscriber
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="entity", type="string", length=128, nullable=true)
+     * @ORM\Column(type="string", length=128, nullable=true)
      */
     private $entity;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="entity_id", type="string", length=128, nullable=true)
+     * @ORM\Column(type="string", length=128, nullable=true)
      */
     private $entityId;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description", type="text", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
     private $description;
 
     /**
+     * @var User
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(name="user", referencedColumnName="id")
      * @Assert\NotBlank()
@@ -60,25 +54,25 @@ class Subscriber
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="email", type="boolean")
+     * @ORM\Column(type="boolean")
      */
     private $email;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="system", type="boolean")
+     * @ORM\Column(type="boolean")
      */
     private $system;
 
     /**
+     * @var User
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(name="user_created", referencedColumnName="id")
      */
     private $userCreated;
 
     /**
+     * @var User
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(name="user_updated", referencedColumnName="id")
      */
@@ -86,13 +80,13 @@ class Subscriber
 
     /**
      * @var \DateTime
-     * @ORM\Column(name="date_created", type="datetime")
+     * @ORM\Column(type="datetime")
      */
     private $dateCreated;
 
     /**
      * @var \DateTime
-     * @ORM\Column(name="date_updated", type="datetime")
+     * @ORM\Column(type="datetime")
      */
     private $dateUpdated;
 
@@ -101,256 +95,133 @@ class Subscriber
         return $this->getEntity() . ', ID: (' . $this->getEntityId() . ')';
     }
 
-    /**
-     * Get id
-     *
-     * @return int
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * Set entity
-     *
-     * @param string $entity
-     *
-     * @return Subscriber
-     */
-    public function setEntity($entity)
+    public function setEntity(?string $entity): self
     {
         $this->entity = $entity;
-
         return $this;
     }
 
-    /**
-     * Get entity
-     *
-     * @return string
-     */
-    public function getEntity()
+    public function getEntity(): ?string
     {
         return $this->entity;
     }
 
-    /**
-     * Set entityId
-     *
-     * @param string $entityId
-     *
-     * @return Subscriber
-     */
-    public function setEntityId($entityId)
+    public function setEntityId(?string $entityId): self
     {
         $this->entityId = $entityId;
-
         return $this;
     }
 
-    /**
-     * Get entityId
-     *
-     * @return string
-     */
-    public function getEntityId()
+    public function getEntityId(): ?string
     {
         return $this->entityId;
     }
 
-    /**
-     * Set description
-     *
-     * @param string $description
-     *
-     * @return Subscriber
-     */
-    public function setDescription($description)
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
-
         return $this;
     }
 
-    /**
-     * Get description
-     *
-     * @return string
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * Set user
-     *
-     * @param User $user
-     *
-     * @return Subscriber
-     */
-    public function setUser($user)
+    public function setUser(User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * Set email
-     *
-     * @param boolean $email
-     *
-     * @return Subscriber
-     */
-    public function setEmail($email)
+    public function setEmail(bool $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
-    /**
-     * Get email
-     *
-     * @return bool
-     */
-    public function getEmail()
+    public function getEmail(): bool
     {
         return $this->email;
     }
 
-    /**
-     * Set system
-     *
-     * @param boolean $system
-     *
-     * @return Subscriber
-     */
-    public function setSystem($system)
+    public function setSystem(bool $system): self
     {
         $this->system = $system;
-
         return $this;
     }
 
-    /**
-     * Get system
-     *
-     * @return bool
-     */
-    public function getSystem()
+    public function getSystem(): bool
     {
         return $this->system;
     }
 
-    /**
-     * Set userCreated
-     * @param User $user
-     * @return Subscriber
-     */
-    public function setUserCreated($user)
+    public function setUserCreated(User $user): self
     {
         $this->userCreated = $user;
         return $this;
     }
 
-    /**
-     * Get userCreated
-     * @return User
-     */
-    public function getUserCreated()
+    public function getUserCreated(): User
     {
         return $this->userCreated;
     }
 
-    /**
-     * Set userUpdated
-     * @param User $user
-     * @return Subscriber
-     */
-    public function setUserUpdated($user)
+    public function setUserUpdated(User $user): self
     {
         $this->userUpdated = $user;
         return $this;
     }
 
-    /**
-     * Get userUpdated
-     * @return User
-     */
-    public function getUserUpdated()
+    public function getUserUpdated(): User
     {
         return $this->userUpdated;
     }
 
-    /**
-     * Set dateCreated
-     * @ORM\PrePersist()
-     * @return Subscriber
-     */
-    public function setDateCreated()
+    /** @ORM\PrePersist() */
+    public function setDateCreated(): self
     {
         $this->dateCreated = new \DateTime();
         return $this;
     }
 
-    /**
-     * Get dateCreated
-     * @return \DateTime
-     */
-    public function getDateCreated()
+    public function getDateCreated(): \DateTime
     {
         return $this->dateCreated;
     }
 
     /**
-     * Set dateUpdated
      * @ORM\PrePersist()
      * @ORM\PreUpdate()
-     * @return Subscriber
      */
-    public function setDateUpdated()
+    public function setDateUpdated(): self
     {
         $this->dateUpdated = new \DateTime();
         return $this;
     }
 
-    /**
-     * Get dateUpdated
-     * @return \DateTime
-     */
-    public function getDateUpdated()
+    public function getDateUpdated(): \DateTime
     {
         return $this->dateUpdated;
     }
 
-    /**
-     * Get dateCreatedString
-     * @return string
-     */
-    public function getDateCreatedString()
+    public function getDateCreatedString(): string
     {
-        return $this->getDateCreated()->format('Y-m-d');
+        return $this->getDateCreated()->format('Y-m-d @ h:i a');
     }
 
-    /**
-     * Get dateUpdatedString
-     * @return string
-     */
-    public function getDateUpdatedString()
+    public function getDateUpdatedString(): string
     {
-        return $this->getDateUpdated()->format('Y-m-d');
+        return $this->getDateUpdated()->format('Y-m-d @ h:i a');
     }
 }

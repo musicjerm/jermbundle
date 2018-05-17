@@ -13,7 +13,7 @@ class FilterPresetType extends AbstractType
     private $user;
     private $entity;
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $this->user = $options['user'];
         $this->entity = $options['entity'];
@@ -35,7 +35,7 @@ class FilterPresetType extends AbstractType
             ));
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
             'user' => null,

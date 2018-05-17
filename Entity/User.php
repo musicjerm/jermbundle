@@ -80,7 +80,6 @@ class User implements UserInterface, \Serializable
         return $this;
     }
 
-
     public function eraseCredentials(): void{}
 
     public function serialize()
@@ -94,11 +93,7 @@ class User implements UserInterface, \Serializable
 
     public function unserialize($serialized): void
     {
-        list (
-            $this->id,
-            $this->username,
-            $this->password
-            ) = unserialize($serialized);
+        [$this->id, $this->username, $this->password] = unserialize($serialized, ['allowed_classes' => [self::class]]);
     }
 
     public function getSalt()

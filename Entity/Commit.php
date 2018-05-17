@@ -5,8 +5,6 @@ namespace Musicjerm\Bundle\JermBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class Commit
- *
  * @ORM\Table(name="git_commit")
  * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\CommitRepository")
  */
@@ -14,7 +12,7 @@ class Commit
 {
     /**
      * @var int
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -22,31 +20,31 @@ class Commit
 
     /**
      * @var string
-     * @ORM\Column(name="git_repo", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      */
     private $gitRepo;
 
     /**
      * @var string
-     * @ORM\Column(name="commit", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      */
     private $commit;
 
     /**
      * @var string
-     * @ORM\Column(name="author", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      */
     private $author;
 
     /**
      * @var string
-     * @ORM\Column(name="notes", type="text")
+     * @ORM\Column(type="text")
      */
     private $notes;
 
     /**
      * @var \DateTime
-     * @ORM\Column(name="date", type="datetime")
+     * @ORM\Column(type="datetime")
      */
     private $date;
 

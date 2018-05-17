@@ -11,7 +11,7 @@ use Symfony\Component\Form\AbstractType;
 
 class DtConfigType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $tooltipOptions = array('none' => -1);
         $sortOptions = array();
@@ -59,10 +59,10 @@ class DtConfigType extends AbstractType
             ->add('isPrimary', null, ['label' => 'Yes']);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
-            'data_class' => 'Musicjerm\Bundle\JermBundle\Entity\DtConfig',
+            'data_class' => \Musicjerm\Bundle\JermBundle\Entity\DtConfig::class,
             'columns' => null
         ));
     }

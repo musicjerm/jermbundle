@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class CrudCreateEvent extends Event
 {
-    const NAME = 'jermbundle.crud_create';
+    public const NAME = 'jermbundle.crud_create';
 
     protected $object;
 

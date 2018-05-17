@@ -9,7 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DtFilterType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('name')
@@ -17,10 +17,10 @@ class DtFilterType extends AbstractType
             ->add('isPrimary');
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
-            'data_class' => 'Musicjerm\Bundle\JermBundle\Entity\DtFilter'
+            'data_class' => \Musicjerm\Bundle\JermBundle\Entity\DtFilter::class
         ));
     }
 }

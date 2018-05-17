@@ -8,9 +8,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * DtFilter
- *
- * @ORM\Table(name="dt_filter")
  * @ORM\Entity()
  * @UniqueEntity(
  *     fields={"user", "name", "entity"}, message="You already have a preset with this name.",
@@ -21,14 +18,14 @@ class DtFilter
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
     /**
+     * @var User
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(name="user", referencedColumnName="id")
      */
@@ -36,166 +33,91 @@ class DtFilter
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="entity", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      */
     private $entity;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=128)
+     * @ORM\Column(type="string", length=128)
      * @Assert\NotBlank()
      */
     private $name;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="data", type="text")
+     * @ORM\Column(type="text")
      */
     private $data;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="is_primary", type="boolean")
+     * @ORM\Column(type="boolean")
      */
     private $isPrimary;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name ?: 'Default';
     }
 
-    /**
-     * Get id
-     *
-     * @return int
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * Set user
-     *
-     * @param User $user
-     *
-     * @return DtFilter
-     */
-    public function setUser($user)
+    public function setUser(User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 
-    /**
-     * Get user
-     *
-     * @return User
-     */
-    public function getUser()
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * Set entity
-     *
-     * @param string $entity
-     *
-     * @return DtFilter
-     */
-    public function setEntity($entity)
+    public function setEntity(string $entity): self
     {
         $this->entity = $entity;
-
         return $this;
     }
 
-    /**
-     * Get entity
-     *
-     * @return string
-     */
-    public function getEntity()
+    public function getEntity(): string
     {
         return $this->entity;
     }
 
-    /**
-     * Set name
-     *
-     * @param string $name
-     *
-     * @return DtFilter
-     */
-    public function setName($name)
+    public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
-    /**
-     * Get name
-     *
-     * @return string
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Set data
-     *
-     * @param string $data
-     *
-     * @return DtFilter
-     */
-    public function setData($data)
+    public function setData(string $data): self
     {
         $this->data = $data;
-
         return $this;
     }
 
-    /**
-     * Get data
-     *
-     * @return string
-     */
-    public function getData()
+    public function getData(): string
     {
         return $this->data;
     }
 
-    /**
-     * Set isPrimary
-     *
-     * @param boolean $isPrimary
-     *
-     * @return DtFilter
-     */
-    public function setIsPrimary($isPrimary)
+    public function setIsPrimary(bool $isPrimary): self
     {
         $this->isPrimary = $isPrimary;
-
         return $this;
     }
 
-    /**
-     * Get isPrimary
-     *
-     * @return bool
-     */
-    public function getIsPrimary()
+    public function getIsPrimary(): ?bool
     {
         return $this->isPrimary;
     }
 }
-

@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class SubscriberCreateEvent extends Event
 {
-    const NAME = 'jermbundle.subscriber_create';
+    public const NAME = 'jermbundle.subscriber_create';
 
     protected $object;
 
