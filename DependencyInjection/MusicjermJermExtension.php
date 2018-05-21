@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class JermExtension extends Extension
+class MusicjermJermExtension extends Extension
 {
     /**
      * @param array $configs
