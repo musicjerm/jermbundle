@@ -39,7 +39,11 @@ class UniqueDTOValidator extends ConstraintValidator
 
         $result = $repo->{'findBy'}($criteria);
 
-        if (\count($result) > 0){
+        $em = $this->registry->getManager();
+        $identifier = $em->getClassMetadata($constraint->entityClass)->getIdentifier()[0];
+        $idGetter = 'get' . ucfirst($identifier);
+
+        if (\count($result) > 0 && $result[0]->$idGetter() !== $value->$identifier){
             $this->context->buildViolation($constraint->message)
                 ->atPath($constraint->errorPath)
                 ->setParameter('{{ string }}', $value)
