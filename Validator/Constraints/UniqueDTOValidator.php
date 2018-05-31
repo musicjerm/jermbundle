@@ -43,11 +43,17 @@ class UniqueDTOValidator extends ConstraintValidator
         $identifier = $em->getClassMetadata($constraint->entityClass)->getIdentifier()[0];
         $idGetter = 'get' . ucfirst($identifier);
 
-        if (\count($result) > 0 && $result[0]->$idGetter() !== $value->$identifier){
-            $this->context->buildViolation($constraint->message)
-                ->atPath($constraint->errorPath)
-                ->setParameter('{{ string }}', $value)
-                ->addViolation();
+        if (\count($result) === 0){
+            return;
         }
+
+        if (\count($result) === 1 && $result[0]->$idGetter() === $value->$identifier){
+            return;
+        }
+
+        $this->context->buildViolation($constraint->message)
+            ->atPath($constraint->errorPath)
+            ->setParameter('{{ string }}', $value)
+            ->addViolation();
     }
 }
