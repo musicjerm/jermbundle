@@ -1,0 +1,56 @@
+{% extends '@JermBundle/Modal/blank.html.twig' %}
+
+{% block content %}
+    <div class="modal-body">
+
+        <h4><i class="fa fa-database"></i> Doctrine Updater</h4>
+        {% if type is defined and type == 'success' %}
+            <p class="text-info">
+                {{ message|nl2br }}
+            </p>
+        {% elseif type is defined and type == 'error' %}
+            <p class="text-red">
+                <i class="fa fa-ban"></i>
+                {{ message|nl2br }}
+            </p>
+        {% endif %}
+
+    </div>
+
+    <div class="modal-footer">
+
+        <button type="button" class="btn btn-default btn-flat pull-left" data-dismiss="modal">Close</button>
+
+        {% if not migrate %}
+            <a class="btn btn-sm btn-flat btn-info modal_redirect"
+               data-href="{{ path('jerm_bundle_app_doctrine_update', { 'method': 'force' }) }}">
+                <i class="fa fa-refresh"></i> Migrate Changes
+            </a>
+        {% endif %}
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        $(function () {
+            let loadSpinner = $('#action_loading_div');
+            let actionModal = $('#action_modal');
+            let modalRedirect = $('.modal_redirect');
+
+            modalRedirect.on('click', function(){
+                $.ajax({
+                    type: 'GET',
+                    url: $(this).attr('data-href'),
+                    success: function(data){
+                        actionModal.html(data)
+                    },
+                    error: function(xhr){
+                        alert('Something has broken. Error: '+xhr.status)
+                    }
+                });
+                loadSpinner.show();
+            });
+        })
+    </script>
+{% endblock %}

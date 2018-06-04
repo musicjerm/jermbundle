@@ -100,3 +100,23 @@ jerm_bundle_notification_view:
 jerm_bundle_notification_mark_read:
     path: /notification/mark_read
     controller: Musicjerm\Bundle\JermBundle\Controller\NotificationController::markReadAction
+
+jerm_bundle_app_config:
+    path: /admin/application
+    controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::indexAction
+
+jerm_bundle_app_git_update:
+    path: /admin/application/git_update
+    controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::gitUpdate
+
+jerm_bundle_app_composer_update:
+    path: /admin/application/composer/{method}
+    controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::composerUpdate
+
+jerm_bundle_app_doctrine_update:
+    path: /admin/application/doctrine/{method}
+    controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::doctrineUpdate
+
+jerm_bundle_app_cache:
+    path: /admin/application/cache
+    controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::cacheAction

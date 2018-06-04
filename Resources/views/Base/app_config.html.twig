@@ -1,0 +1,55 @@
+{% extends '@JermBundle/Base/index.html.twig' %}
+
+{% block body %}
+
+    {% if active_skin == 'skin-blue' %}
+        {% set box_theme = 'box-info' %}
+    {% elseif active_skin == 'skin-green' %}
+        {% set box_theme = 'box-success' %}
+    {% elseif active_skin == 'skin-yellow' %}
+        {% set box_theme = 'box-warning' %}
+    {% elseif active_skin == 'skin-purple' %}
+        {% set box_theme = 'box-primary' %}
+    {% elseif active_skin == 'skin-red' %}
+        {% set box_theme = 'box-danger' %}
+    {% else %}
+        {% set box_theme = 'box-default' %}
+    {% endif %}
+
+    <div class="box {{ box_theme }}">
+
+        <div class="box-header with-border">
+            <h3 class="box-title">Application Setup and Configuration</h3>
+            <div class="box-tools pull-right">
+
+            </div>
+        </div>
+
+        <div class="box-body">
+            <h4>Update Status:</h4>
+            <p>{{ update_status }}</p>
+        </div>
+
+    </div>
+
+    <div class="box {{ box_theme }}">
+
+        <div class="box-header with-border">
+            <h4 class="box-title">Tools</h4>
+        </div>
+
+        <div class="box-body">
+
+            {% for tool in tools %}
+                <a class="btn btn-sm btn-flat head_action_btn {{ tool.class }}"
+                   data-toggle="modal" data-target="#action_modal"
+                   data-href="{{ tool.path }}">
+                    {% if tool.icon is defined %}<i class="fa {{ tool.icon }}"></i>{% endif %}
+                    {{ tool.label }}
+                </a>
+            {% endfor %}
+
+        </div>
+    </div>
+
+{% endblock %}
