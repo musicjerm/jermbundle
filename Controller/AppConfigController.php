@@ -13,6 +13,9 @@ class AppConfigController extends Controller
      */
     public function indexAction(): Response
     {
+        // allow some time
+        set_time_limit(1800);
+
         // build new updater
         $appUpdater = new AppUpdater(
             $this->getParameter('kernel.project_dir'),
@@ -88,6 +91,9 @@ class AppConfigController extends Controller
      */
     public function gitUpdate(): Response
     {
+        // allow some time
+        set_time_limit(1800);
+
         // app updater
         $appUpdater = new AppUpdater(
             $this->getParameter('kernel.project_dir'),
@@ -113,6 +119,9 @@ class AppConfigController extends Controller
      */
     public function composerUpdate(string $method): Response
     {
+        // allow some time
+        set_time_limit(1800);
+
         // make sure method is correct else return error
         if (($_SERVER['APP_ENV'] === 'dev' && $method !== 'update') || ($_SERVER['APP_ENV'] === 'prod' && $method !== 'install')){
             return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -140,6 +149,9 @@ class AppConfigController extends Controller
      */
     public function doctrineUpdate(string $method): Response
     {
+        // allow some time
+        set_time_limit(1800);
+
         // make sure method is correct
         if (!\in_array($method, ['check', 'force'])){
             return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -181,6 +193,9 @@ class AppConfigController extends Controller
      */
     public function cacheAction(): Response
     {
+        // allow some time
+        set_time_limit(1800);
+
         // app updater
         $appUpdater = new AppUpdater($this->getParameter('kernel.project_dir'), null, null, null);
 
