@@ -39,7 +39,7 @@ class Notification
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
+     * @ORM\Column(type="text")
      */
     private $message;
 
