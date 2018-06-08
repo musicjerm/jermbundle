@@ -68,11 +68,53 @@ class AppUpdater
         return false;
     }
 
+    public function getConfiguredUrl(): string
+    {
+        return "https://$this->gitUser:$this->gitPass@$this->gitRepo";
+    }
+
+    public function getConfig(): array
+    {
+        // create and run new process
+        $processString = 'cd ' . $this->projectDir . '; git config --list';
+        $process = new Process($processString);
+        $process->run();
+
+        // set options array
+        $options = array();
+
+        // check if process worked, return string
+        if ($process->isSuccessful()){
+            foreach (explode("\n", $process->getOutput()) as $line){
+                // handle string (setting=value)
+                $exploded = explode('=', $line, 2);
+                \count(explode('=', $line, 2)) !== 2 ?: $options[$exploded[0]] = $exploded[1];
+            }
+        }
+
+        // return options array
+        return $options;
+    }
+
+    public function setGitOption(string $option, $value): void
+    {
+        // create and run new process
+        $processString = 'cd ' . $this->projectDir . "; git config $option $value";
+        $process = new Process($processString);
+        $process->run();
+
+        // check if process worked, set output message
+        if ($process->isSuccessful()){
+            $this->message = $process->getOutput();
+        }else{
+            $this->message = $process->getErrorOutput();
+        }
+    }
+
     public function pullUpdates(): bool
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . '; git pull https://';
-        $processString .= $this->gitUser . ':' . $this->gitPass . '@' . $this->gitRepo;
+        $processString = 'cd ' . $this->projectDir . "; git pull https://$this->gitUser:$this->gitPass@$this->gitRepo";
         $process = new Process($processString);
         $process->run();
 

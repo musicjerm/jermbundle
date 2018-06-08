@@ -105,6 +105,10 @@ jerm_bundle_app_config:
     path: /admin/application
     controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::indexAction
 
+jerm_bundle_app_config_options:
+    path: /admin/application/config_options
+    controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::configureOptions
+
 jerm_bundle_app_git_update:
     path: /admin/application/git_update
     controller: Musicjerm\Bundle\JermBundle\Controller\AppConfigController::gitUpdate

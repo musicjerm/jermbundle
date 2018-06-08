@@ -1,0 +1,29 @@
+<?php
+
+namespace Musicjerm\Bundle\JermBundle\Form;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Musicjerm\Bundle\JermBundle\Form\DTO\AppConfigData;
+
+class AppConfigType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('fileMode', CheckboxType::class, ['required' => false])
+            ->add('sslVerify', CheckboxType::class, ['required' => false])
+            ->add('remoteOriginUrl')
+            ->add('configuredUrl', HiddenType::class);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults(array(
+            'data_class' => AppConfigData::class
+        ));
+    }
+}

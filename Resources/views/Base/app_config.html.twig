@@ -20,7 +20,16 @@
 
         <div class="box-header with-border">
             <h3 class="box-title">Application Setup and Configuration</h3>
-            <div class="box-tools pull-right">
+            <div class="pull-right">
+
+                {% for tool in tools %}
+                    <a class="btn btn-sm btn-flat head_action_btn {{ tool.class }}"
+                       data-toggle="modal" data-target="#action_modal"
+                       data-href="{{ tool.path }}">
+                        {% if tool.icon is defined %}<i class="fa {{ tool.icon }}"></i>{% endif %}
+                        {{ tool.label }}
+                    </a>
+                {% endfor %}
 
             </div>
         </div>
@@ -35,20 +44,31 @@
     <div class="box {{ box_theme }}">
 
         <div class="box-header with-border">
-            <h4 class="box-title">Tools</h4>
+            <h4 class="box-title">
+                Configured Options
+                <a class="btn btn-sm btn-flat head_action_btn" data-toggle="modal" data-target="#action_modal" data-href="{{ path('jerm_bundle_app_config_options') }}"><i class="fa fa-pencil"></i> Edit</a>
+            </h4>
         </div>
 
         <div class="box-body">
-
-            {% for tool in tools %}
-                <a class="btn btn-sm btn-flat head_action_btn {{ tool.class }}"
-                   data-toggle="modal" data-target="#action_modal"
-                   data-href="{{ tool.path }}">
-                    {% if tool.icon is defined %}<i class="fa {{ tool.icon }}"></i>{% endif %}
-                    {{ tool.label }}
-                </a>
-            {% endfor %}
-
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for option, value in config if option != 'remote.origin.url' %}
+                        <tr>
+                            <td>{{ option }}</td>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

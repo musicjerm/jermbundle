@@ -2,8 +2,11 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
+use Musicjerm\Bundle\JermBundle\Form\AppConfigType;
+use Musicjerm\Bundle\JermBundle\Form\DTO\AppConfigData;
 use Musicjerm\Bundle\JermBundle\Model\AppUpdater;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class AppConfigController extends Controller
@@ -26,6 +29,9 @@ class AppConfigController extends Controller
 
         // fetch remote, check for updates
         !$appUpdater->fetchRemote() ?: $appUpdater->checkUpdates();
+
+        // git config
+        $config = $appUpdater->getConfig();
 
         // set message if not already set
         if ($appUpdater->message === null){
@@ -82,7 +88,8 @@ class AppConfigController extends Controller
         return $this->render('@JermBundle/Base/app_config.html.twig', array(
             'update_status' => $appUpdater->message,
             'commits_available' => $appUpdater->commitsAvailable,
-            'tools' => $tools
+            'tools' => $tools,
+            'config' => $config
         ));
     }
 
@@ -206,6 +213,81 @@ class AppConfigController extends Controller
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
             'message' => ucfirst($type) . '!' . $appUpdater->message,
             'type' => $type
+        ));
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function configureOptions(Request $request): Response
+    {
+        // create new app updater instance and get existing options
+        $appUpdater = new AppUpdater(
+            $this->getParameter('kernel.project_dir'),
+            $this->getParameter('git_user'),
+            $this->getParameter('git_pass'),
+            $this->getParameter('git_repo')
+        );
+        $existingOptions = $appUpdater->getConfig();
+
+        // set data for form
+        $appConfigData = new AppConfigData();
+        $appConfigData->configuredUrl = $appUpdater->getConfiguredUrl();
+
+        if (isset($existingOptions['core.filemode'])){
+            $appConfigData->fileMode = $existingOptions['core.filemode'] === 'true';
+            $appConfigData->existingFileMode = $existingOptions['core.filemode'] === 'true';
+        }
+
+        if (isset($existingOptions['http.sslverify'])){
+            $appConfigData->sslVerify = $existingOptions['http.sslverify'] === 'true';
+            $appConfigData->existingSslVerify = $existingOptions['http.sslverify'] === 'true';
+        }
+
+        if (isset($existingOptions['remote.origin.url'])){
+            $appConfigData->remoteOriginUrl = $existingOptions['remote.origin.url'];
+            $appConfigData->existingRemoteOriginUrl = $existingOptions['remote.origin.url'];
+        }
+
+        // build form
+        $form = $this->createForm(AppConfigType::class, $appConfigData, array(
+            'action' => $this->generateUrl('jerm_bundle_app_config_options')
+        ));
+
+        // process form
+        $form->handleRequest($request);
+
+        // check form
+        if ($form->isSubmitted() && $form->isValid()){
+            // use app updater to set new values if they have changed
+            if ($appConfigData->fileMode !== $appConfigData->existingFileMode){
+                $appUpdater->setGitOption('core.filemode', $appConfigData->fileMode ? 'true' : 'false');
+            }
+
+            if ($appConfigData->sslVerify !== $appConfigData->existingSslVerify){
+                $appUpdater->setGitOption('http.sslverify', $appConfigData->sslVerify ? 'true' : 'false');
+            }
+
+            if ($appConfigData->remoteOriginUrl !== $appConfigData->existingRemoteOriginUrl){
+                $appUpdater->setGitOption('remote.origin.url', "\"$appConfigData->remoteOriginUrl\"");
+            }
+
+            // refresh page
+            return $this->render('@JermBundle/Modal/notification.html.twig', array(
+                'message' => 'Success!',
+                'type' => 'success',
+                'modal_size' => 'modal-sm',
+                'full_refresh' => true,
+                'fade' => true
+            ));
+        }
+
+        // return form to user
+        return $this->render('@JermBundle/Modal/app_config_form.html.twig', array(
+            'header' => 'Configure Options',
+            'form' => $form->createView(),
+            'front_load' => ['bundles/jerm/js/appConfigForm.js']
         ));
     }
 }
