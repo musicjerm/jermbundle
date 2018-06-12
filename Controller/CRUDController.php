@@ -271,15 +271,23 @@ class CRUDController extends Controller
                 }
             }
 
+            // look for previous path
+            if ($request->get('previous_path') !== null){
+                $ppId = $request->get('previous_path_id') ?? $id;
+                $previousPath = $this->generateUrl($request->get('previous_path'), ['id' => $ppId]);
+            }
+
+            // return form to user
             return $this->render('@JermBundle/Modal/form.html.twig', array(
                 'header' => 'Update '.ucfirst(str_replace('_', ' ', $entity))." $id",
                 'form' => $form->createView(),
-                'front_load' => $frontLoadFiles
+                'front_load' => $frontLoadFiles,
+                'previous_path' => $previousPath ?? null
             ));
         }
 
         // throw error if trying to change the ID
-        if ($workingObject->getId() != $id){
+        if ($workingObject->getId() !== $id){
             throw new \Exception("Cannot change the $entity ID.");
         }
 
