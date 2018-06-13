@@ -16,6 +16,10 @@ $(document).ready(function(){
         todayHighlight: true
     });
 
+    $('.timepicker').timepicker({
+        showInputs: false
+    });
+
     actionForm.submit(function(){
         $.ajax({
             type: 'POST',
