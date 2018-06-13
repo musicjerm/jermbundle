@@ -283,7 +283,7 @@ class CRUDController extends Controller
         }
 
         // throw error if trying to change the ID
-        if ($workingObject->getId() !== $id){
+        if ($workingObject->getId() != $id){
             throw new \Exception("Cannot change the $entity ID.");
         }
 
