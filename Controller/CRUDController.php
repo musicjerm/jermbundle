@@ -160,6 +160,11 @@ class CRUDController extends Controller
             $formArray['previous_path'] = $request->get('previous_path');
         }
 
+        // set form option for next path if exists
+        if ($request->get('next_path')){
+            $formArray['next_path'] = $request->get('next_path');
+        }
+
         // create form
         $form = $this->createForm(
             $formTypeClass,
@@ -213,6 +218,12 @@ class CRUDController extends Controller
         $event = new CrudCreateEvent($workingObject);
         $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(CrudCreateEvent::NAME, $event);
+
+        // if next_path is defined, flash new object id, redirect
+        if ($form->has('next_path') && method_exists($workingObject, 'getId') && $form->get('next_path')->getData() !== null){
+            $this->addFlash($entity,  $workingObject->getId());
+            return $this->redirect($form->get('next_path')->getData());
+        }
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -272,6 +283,11 @@ class CRUDController extends Controller
             $formArray['previous_path'] = $request->get('previous_path');
         }
 
+        // set form options for next path if exists
+        if ($request->get('next_path')){
+            $formArray['next_path'] = $request->get('next_path');
+        }
+
         // create form
         $form = $this->createForm(
             $formTypeClass,
@@ -319,6 +335,12 @@ class CRUDController extends Controller
         $event = new CrudUpdateEvent($workingObject);
         $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(CrudUpdateEvent::NAME, $event);
+
+        // if next_path is defined, flash new object id, redirect
+        if ($form->has('next_path') && method_exists($workingObject, 'getId') && $form->get('next_path')->getData() !== null){
+            $this->addFlash($entity,  $workingObject->getId());
+            return $this->redirect($form->get('next_path')->getData());
+        }
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
