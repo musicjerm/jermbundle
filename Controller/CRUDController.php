@@ -137,6 +137,11 @@ class CRUDController extends Controller
         // create new working object
         $workingObject = new $this->yamlConfig['entity_class'];
 
+        // set location if necessary
+        if ($this->locationRestricted && method_exists($workingObject, 'setLocation') && method_exists($user, 'getLocation')){
+            $workingObject->setLocation($user->getLocation());
+        }
+
         // set form class
         $formTypeClass = "App\Form\CRUD\\" . $this->yamlConfig['entity_name'] . 'Type';
 
@@ -145,13 +150,21 @@ class CRUDController extends Controller
             throw new \Exception($formTypeClass.' is missing.');
         }
 
+        // set form array
+        $formArray = array(
+            'action' => $this->generateUrl('jerm_bundle_crud_create', ['entity' => $entity])
+        );
+
+        // set form option for previous path if exists
+        if ($request->get('previous_path')){
+            $formArray['previous_path'] = $request->get('previous_path');
+        }
+
         // create form
         $form = $this->createForm(
             $formTypeClass,
             $workingObject,
-            array(
-                'action' => $this->generateUrl('jerm_bundle_crud_create', ['entity' => $entity])
-            ));
+            $formArray);
 
         $form->handleRequest($request);
 
@@ -169,7 +182,7 @@ class CRUDController extends Controller
                 'header' => 'Create New '.ucfirst(str_replace('_', ' ', $entity)),
                 'form' => $form->createView(),
                 'front_load' => $frontLoadFiles,
-                'previous_path' => $request->get('previous_path')
+                'previous_path' => $form->has('previous_path') ? $form->get('previous_path')->getData() : null
             ));
         }
 
@@ -177,11 +190,6 @@ class CRUDController extends Controller
         if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
             $workingObject->setDocument($workingObject->getFile()->getClientOriginalName());
             $this->setFileSavePath($this->yamlConfig['entity_name']);
-        }
-
-        // set location if necessary
-        if ($this->locationRestricted && method_exists($workingObject, 'setLocation') && method_exists($user, 'getLocation')){
-            $workingObject->setLocation($user->getLocation());
         }
 
         // persist object
@@ -254,13 +262,21 @@ class CRUDController extends Controller
             ));
         }
 
+        // set form array
+        $formArray = array(
+            'action' => $this->generateUrl('jerm_bundle_crud_update', ['entity' => $entity, 'id' => urlencode($id)])
+        );
+
+        // set form option for previous path if exists
+        if ($request->get('previous_path')){
+            $formArray['previous_path'] = $request->get('previous_path');
+        }
+
         // create form
         $form = $this->createForm(
             $formTypeClass,
             $workingObject,
-            array(
-                'action' => $this->generateUrl('jerm_bundle_crud_update', ['entity' => $entity, 'id' => urlencode($id)])
-            ));
+            $formArray);
 
         $form->handleRequest($request);
 
@@ -278,7 +294,7 @@ class CRUDController extends Controller
                 'header' => 'Update '.ucfirst(str_replace('_', ' ', $entity))." $id",
                 'form' => $form->createView(),
                 'front_load' => $frontLoadFiles,
-                'previous_path' => $request->get('previous_path')
+                'previous_path' => $form->has('previous_path') ? $form->get('previous_path')->getData() : null
             ));
         }
 
