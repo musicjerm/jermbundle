@@ -185,6 +185,16 @@ class BaseController extends Controller
                     $filtersForm->add($filter['name'], TextType::class, isset($filter['array']) ? $filter['array'] : []);
                     break;
                 case 'Entity';
+                    if (isset($filter['restrict_location_and_active']) && $filter['restrict_location_and_active'] === true){
+                        $filter['array']['query_builder'] = function(EntityRepository $er){
+                            return $er->createQueryBuilder('f')
+                                ->where('f.isActive = :isActive')
+                                ->andWhere('f.location = :location')
+                                ->orderBy('f.id')
+                                ->setParameter('isActive', true)
+                                ->setParameter('location', $this->user->getLocation());
+                        };
+                    }
                     if (isset($filter['restrict_is_active']) && $filter['restrict_is_active'] == true){
                         $filter['array']['query_builder'] = function(EntityRepository $er){
                             return $er->createQueryBuilder('f')
@@ -455,12 +465,17 @@ class BaseController extends Controller
         }
 
         // check for entity query method
-        if (!method_exists($this->entityRepository, 'standardQuery')){
-            throw new \Exception('Standard query has not been implemented in your '.$this->yamlConfig['entity'].' repository class.');
+        if (array_key_exists('query', $this->yamlConfig) && $this->yamlConfig['query'] !== null){
+            $queryMethod = $this->yamlConfig['query'];
+        }else{
+            $queryMethod = 'standardQuery';
+        }
+        if (!method_exists($this->entityRepository, $queryMethod)){
+            throw new \Exception("$queryMethod has not been implemented in your " . $this->yamlConfig['entity'] . ' repository class.');
         }
 
         // query entities - paginate
-        $query = $this->entityRepository->standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filterData, $user);
+        $query = $this->entityRepository->$queryMethod($orderBy, $orderDir, $firstResult, $maxResults, $filterData, $user);
         $paginatedQuery = new Paginator($query, $fetchJoinCollection = false);
 
         // loop items and build array for json output
@@ -605,12 +620,17 @@ class BaseController extends Controller
         isset($filterData) ?: $filterData = null;
 
         // check for entity query method
-        if (!method_exists($this->entityRepository, 'standardQuery')){
-            throw new \Exception('Standard query has not been implemented in your '.$this->yamlConfig['entity'].' repository class.');
+        if (array_key_exists('query', $this->yamlConfig) && $this->yamlConfig['query'] !== null){
+            $queryMethod = $this->yamlConfig['query'];
+        }else{
+            $queryMethod = 'standardQuery';
+        }
+        if (!method_exists($this->entityRepository, $queryMethod)){
+            throw new \Exception("$queryMethod has not been implemented in your " . $this->yamlConfig['entity'] . ' repository class.');
         }
 
         /** @var Query $query */
-        $query = $this->entityRepository->standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filterData, $user);
+        $query = $this->entityRepository->$queryMethod($orderBy, $orderDir, $firstResult, $maxResults, $filterData, $user);
 
         // parse data and put "dumpable" columns into array for csv output
         $data = array();
