@@ -1,5 +1,5 @@
-$(document).ready(function(){
-    var thisScript = $('#notification_script');
+$(function(){
+    let thisScript = $('#notification_script');
 
     // refresh page
     if (thisScript.attr('data-full-refresh')){
@@ -8,7 +8,16 @@ $(document).ready(function(){
 
     // refresh dataTable
     if (thisScript.attr('data-refresh')){
-        $('#data_info_table').DataTable().ajax.reload();
+        let dataInfoTable = $('#data_info_table');
+        let apptCalendar = $('#appt_calendar');
+
+        if (dataInfoTable.length > 0){
+            dataInfoTable.DataTable().ajax.reload();
+        }
+
+        if(apptCalendar.length > 0){
+            apptCalendar.fullCalendar('refetchEvents');
+        }
     }
 
     // request server clear session
