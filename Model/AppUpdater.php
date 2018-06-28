@@ -132,7 +132,7 @@ class AppUpdater
     public function composerUpdate(string $method): bool
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . '; php vendor/bin/composer ' . $method;
+        $processString = "php /usr/local/bin/composer $method -d $this->projectDir";
         $process = new Process($processString);
         $process->run();
 
