@@ -229,6 +229,10 @@ class BaseController extends Controller
                             foreach ($er->$query($this->user->getLocation()) as $val){
                                 $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
                             }
+                        }elseif(isset($filter['restrict_owner']) && $filter['restrict_owner'] == true){
+                            foreach ($er->query($this->user) as $val){
+                                $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
+                            }
                         }else{
                             foreach ($er->$query() as $val){
                                 $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
