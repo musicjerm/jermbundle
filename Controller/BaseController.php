@@ -230,7 +230,7 @@ class BaseController extends Controller
                                 $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
                             }
                         }elseif(isset($filter['restrict_owner']) && $filter['restrict_owner'] == true){
-                            foreach ($er->query($this->user) as $val){
+                            foreach ($er->$query($this->user) as $val){
                                 $filter['array']['choices'][$val[$filter['entity_group']]] = $val[$filter['entity_group']];
                             }
                         }else{
