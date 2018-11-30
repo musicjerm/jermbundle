@@ -1,0 +1,74 @@
+{% extends '@JermBundle/Modal/form.html.twig' %}
+
+{% block form %}
+    {{ parent() }}
+    {% if header_errors %}
+        <div class="callout callout-danger">
+            <i class="fa fa-warning"></i>
+            Error(s) in column headers
+        </div>
+    {% endif %}
+    {% if processing_errors %}
+        <div class="callout callout-danger table-responsive">
+            <i class="fa fa-warning"></i>
+            Import failed with the following errors:
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Message</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for error in processing_errors %}
+                    <tr>
+                        <td>{{ error.code }}</td>
+                        <td>{{ error.message }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    <p class="text text-info">
+        Please make sure your data contains the following columns with matching headers:
+    </p>
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Column</th>
+            <th>Type</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key,val in structure %}
+            <tr {% if val.error|length > 0 %} class="bg-danger"{% endif %}>
+                <td class="text-muted">{{ loop.index }}</td>
+                <td>
+                    {% if val.error|length > 0 %}
+                        <a data-toggle="tooltip" title="{{ val.errorString }}">{{ val.name }}</a>
+                    {% else %}
+                        {{ val.name }}
+                    {% endif %}
+                </td>
+                <td>
+                    {{ val.type }}
+                    {% if val.foreignKey %}
+                        ({{ val.foreignKey.table }}.{{ val.foreignKey.column }})
+                    {% elseif val.length %}
+                        ({{ val.length }})
+                    {% endif %}
+                </td>
+                <td class="text-orange">{% if val.primary == true %}<i class="fa fa-key"></i> Key{% endif %}</td>
+                <td class="text-maroon">{% if val.unique == true %}<i class="fa fa-file-text"></i> Unique{% endif %}</td>
+                <td class="text-blue">{% if val.required %}<i class="fa fa-asterisk"></i> Required{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a class="btn btn-link" href="{{ get_template_url }}">Download Template</a>
+{% endblock %}

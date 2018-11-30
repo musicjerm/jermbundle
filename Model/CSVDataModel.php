@@ -12,7 +12,6 @@ class CSVDataModel
      * @return CSVDataModel
      */
     public function setColumnNames($columnNames){
-        strtolower($columnNames[0]) != 'id' ?: $columnNames[0] .= ' ';
         $this->columnNames = $columnNames;
         return $this;
     }

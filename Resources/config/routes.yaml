@@ -81,6 +81,10 @@ jerm_bundle_get_file:
     path: /crud/get_file/{entity}/{id}
     controller: Musicjerm\Bundle\JermBundle\Controller\CRUDController::getFileAction
 
+jerm_bundle_importer_fast:
+    path: /importer/fast/{entity}
+    controller: Musicjerm\Bundle\JermBundle\Controller\ImporterController::fastImport
+
 jerm_bundle_importer_import:
     path: /importer/import/{entity}
     controller: Musicjerm\Bundle\JermBundle\Controller\ImporterController::importAction

@@ -4,19 +4,15 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
 use Musicjerm\Bundle\JermBundle\Events\ImporterImportEvent;
+use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
+use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
-use Musicjerm\Bundle\JermBundle\Model\ImporterModel;
+use Musicjerm\Bundle\JermBundle\Model\ImporterStructureModel;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
-use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Yaml\Yaml;
 
 class ImporterController extends Controller
@@ -29,9 +25,10 @@ class ImporterController extends Controller
 
     /**
      * @param string $configName
+     * @return bool
      * @throws \Exception
      */
-    private function setYamlConfig($configName)
+    private function setYamlConfig($configName): bool
     {
         $configDirs = array(
             $this->getParameter('kernel.root_dir') . '/JBConfig/Entity',
@@ -43,7 +40,9 @@ class ImporterController extends Controller
             if (file_exists($dir . "/$configName.yaml")){
                 $configFile = $dir . "/$configName.yaml";
                 break;
-            }elseif (file_exists($dir . "/$configName.yml")){
+            }
+
+            if (file_exists($dir . "/$configName.yml")){
                 $configFile = $dir . "/$configName.yml";
                 break;
             }
@@ -68,6 +67,30 @@ class ImporterController extends Controller
 
         // set import array from config file
         $this->importConfig = $this->yamlConfig['import'];
+
+        return true;
+    }
+
+    private $transformerError;
+
+    private function checkTransformer(): bool
+    {
+        if (!array_key_exists('transformer', $this->importConfig)){
+            $this->transformerError = 'Transformer not defined in config';
+            return false;
+        }
+
+        if (!class_exists($this->importConfig['transformer'])){
+            $this->transformerError = 'Transformer class could not be found';
+            return false;
+        }
+
+        if (!method_exists($this->importConfig['transformer'], 'importerFastTransformer')){
+            $this->transformerError = 'Method "importerFastTransformer" does not exist in transformer class';
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -77,14 +100,17 @@ class ImporterController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function importAction(Request $request, UserInterface $user, $entity)
+    public function fastImport(Request $request, UserInterface $user, $entity): Response
     {
-        // set config array
+        // set yaml config
         $this->setYamlConfig($entity);
 
-        // check permissions set in config
-        if (!$this->isGranted($this->yamlConfig['actions']['head']['jerm_bundle_importer_import']['role'])){
-            throw new AccessDeniedException('You are not allowed here.');
+        // make sure transformer is configured
+        if ($this->checkTransformer() === false){
+            return $this->render('@Jerm/Modal/notification.html.twig', array(
+                'type' => 'error',
+                'message' => $this->transformerError
+            ));
         }
 
         // entity manager
@@ -93,7 +119,7 @@ class ImporterController extends Controller
         /** @var $sm MySqlSchemaManager */
         $sm = $this->get('database_connection')->getSchemaManager();
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
-        $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));
+        $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));// create array with new importer model for each column
 
         // set column indexes
         $columnIndexes = array();
@@ -118,247 +144,221 @@ class ImporterController extends Controller
             );
         }
 
-        // create array with new importer model for each column
+        /** @var ImporterStructureModel[] $structureArray */
         $structureArray = array();
-        foreach ($this->importConfig['headers'] as $ic){
-            $structureArray[$ic] = new ImporterModel();
-            $structureArray[$ic]->setName(ucwords(str_replace('_', ' ', $nameConverter->normalize($ic))));
+        foreach ($this->importConfig['headers'] as $key => $ic){
+            $structureArray[$ic] = new ImporterStructureModel();
+            $structureArray[$ic]->name = ucwords(str_replace('_', ' ', $nameConverter->normalize($ic)));
             if (isset($columnFks[$ic])){
-                $structureArray[$ic]->setType('Entity');
-                $structureArray[$ic]->setForeignKey($columnFks[$ic]);
-                $structureArray[$ic]->setRepo($em->getRepository('App:'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table']))));
+                $structureArray[$ic]->type = 'Entity';
+                $structureArray[$ic]->foreignKey = $columnFks[$ic];
+                $structureArray[$ic]->repo = $em->getRepository('App:'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table'])));
             }else{
-                $structureArray[$ic]->setType($columnList[$nameConverter->normalize($ic)]->getType());
+                $structureArray[$ic]->type = $columnList[$nameConverter->normalize($ic)]->getType();
             }
-            $structureArray[$ic]->setRequired($columnList[$nameConverter->normalize($ic)]->getNotnull() ? true : false);
+            $structureArray[$ic]->required = $columnList[$nameConverter->normalize($ic)]->getNotnull() ? true : false;
             if ($columnList[$nameConverter->normalize($ic)]->getLength()){
-                $structureArray[$ic]->setLength($columnList[$nameConverter->normalize($ic)]->getLength());
+                $structureArray[$ic]->length = $columnList[$nameConverter->normalize($ic)]->getLength();
             }
-            $structureArray[$ic]->setPrimary(isset($columnIndexes[$nameConverter->normalize($ic)]['primary']) ? true : false);
-            $structureArray[$ic]->setUnique(isset($columnIndexes[$nameConverter->normalize($ic)]['unique']) ? true : false);
+            $structureArray[$ic]->primary = isset($columnIndexes[$nameConverter->normalize($ic)]['primary']) ? true : false;
+            $structureArray[$ic]->unique = isset($columnIndexes[$nameConverter->normalize($ic)]['unique']) ? true : false;
+
+            if (\in_array($key, $this->importConfig['keys'], true)){
+                $structureArray[$ic]->primary = true;
+                $structureArray[$ic]->required = true;
+            }
         }
 
         // build form
-        $form = $this->createFormBuilder()
-            ->setAction($this->generateUrl('jerm_bundle_importer_import', array('entity'=>$entity)))
-            ->add('file', FileType::class, array(
-                'label'=>'Select CSV File',
-                'constraints'=>array(
-                    new NotBlank(),
-                    new File(array(
-                        'maxSize'=>'100M',
-                        'mimeTypes'=>'text/plain',
-                        'mimeTypesMessage'=>'Please upload a valid CSV file.'
-                    ))
-                )))
-            ->add('has_headers', CheckboxType::class, array('required'=>false))
-            ->add('set_blanks_null', CheckboxType::class, array('required'=>false))
-            ->getForm();
+        $uploadFormData = new ImporterUploadData();
+        $uploadForm = $this->createForm(ImporterUploadType::class, $uploadFormData, array(
+            'action' => $this->generateUrl('jerm_bundle_importer_fast', ['entity' => $entity])
+        ));
 
-        // handle form request
-        $form->handleRequest($request);
+        // process form
+        $uploadForm->handleRequest($request);
 
-        // process data if form is submitted
-        if ($form->isSubmitted() && $form->isValid()){
+        // check form
+        $headerErrors = false;
+        $processingErrors = array();
+        if ($uploadForm->isSubmitted() && $uploadForm->isValid()){
+            // capture start time, remove time limit
+            $startTime = new \DateTime();
             set_time_limit(0);
-            //truncate existing data
-            if (isset($this->importConfig['truncate']) && $this->importConfig['truncate'] == true){
-                $entityRepo = $em->getRepository($this->yamlConfig['entity']);
-                $entities = $entityRepo->findAll();
-                foreach ($entities as $objectToRemove){
-                    $em->remove($objectToRemove);
-                }
-                $em->flush();
+
+            // set batch size to keep memory usage down
+            $batchSize = $this->importConfig['batch_size'] ?? 1000;
+            $updateOnly = false;
+
+            // repo
+            $repo = $em->getRepository($this->yamlConfig['entity_class']);
+
+            // check for pre-process script, execute
+            if (method_exists($repo, 'preFastImport')){
+                $repo->preFastImport();
             }
 
-            /** @var $file UploadedFile */
-            $file = $request->files->get('form')['file'];
-            $file_h = fopen($file->getRealPath(), "r");
+            // open file
+            $fileHandler = fopen($uploadFormData->file->getRealPath(), 'rb');
 
-            $batchSize = isset($this->importConfig['batch_size']) ? $this->importConfig['batch_size'] : 1000;
+            // loop lines
             $i = 0;
-            $countNew = 0;
-            $countUpdated = 0;
-            while (($dataLine = fgetcsv($file_h,0,',')) !== false){
-                if (isset($request->get('form')['has_headers']) && $i == 0){
-                    //skip first line if headers exist
-                }else{
-                    if (count($dataLine) !== count($this->importConfig['headers'])){
-                        return $this->render('@JermBundle/Modal/notification.html.twig', array(
-                            'message'=>'Invalid Column Count.',
-                            'type'=>'error'
-                        ));
+            $newCount = 0;
+            $updateCount = 0;
+            $queryKeys = array();
+            while (($row = fgetcsv($fileHandler, 0, ',')) !== false){
+                // check headers
+                if ($i === 0){
+                    // loop structure array, set positions
+                    foreach ($structureArray as $key => $columnHeader){
+                        $positionArray = array_keys($row, $columnHeader->name);
+
+                        // check for duplicate headers
+                        if (\count($positionArray) > 1){
+                            $columnHeader->error[] = 'Duplicate column headers';
+                            $headerErrors = true;
+                        }
+
+                        // check for primary header
+                        if ($columnHeader->primary === true && \count($positionArray) === 0){
+                            $columnHeader->error[] = 'Primary header missing';
+                            $headerErrors = true;
+                        }elseif ($columnHeader->primary === true){
+                            // set query keys
+                            $queryKeys[$key] = $positionArray[0];
+                        }
+
+                        // check for required, but non-primary header
+                        if ($columnHeader->primary === false && $columnHeader->required === true && \count($positionArray) === 0){
+                            $columnHeader->warning[] = 'Required header missing, update only enforced';
+                            $updateOnly = true;
+                        }
+
+                        // set position
+                        if (\count($positionArray) > 0){
+                            $columnHeader->position = $positionArray[0];
+                        }
                     }
 
-                    $search = array();
-                    if (count($this->importConfig['keys']) > 0){
-                        foreach ($this->importConfig['keys'] as $pos=>$importKey){
-                            if (strlen($dataLine[$importKey]) > 0){
-                                if ($structureArray[$this->importConfig['headers'][$importKey]]->getType() == 'Entity'){
-                                    if (isset($this->importConfig['entity_names']) && isset($this->importConfig['entity_names'][$this->importConfig['headers'][$importKey]])){
-                                        $searchEntity = 'App:'.$this->importConfig['entity_names'][$this->importConfig['headers'][$importKey]];
-                                    }else{
-                                        $searchEntity = 'App:'.ucfirst($this->importConfig['headers'][$importKey]);
-                                    }
-                                    $importKeyEntity = $em->find("$searchEntity", $dataLine[$importKey]);
-                                    if (null !== $importKeyEntity){
-                                        $search[$this->importConfig['headers'][$importKey]] = $importKeyEntity;
-                                    }
-                                }else{
-                                    $search[$this->importConfig['headers'][$importKey]] = $dataLine[$importKey];
-                                }
-                            }
-                        }
-                        if (count($search) == count($this->importConfig['keys'])){
-                            $workingObject = $em->getRepository($this->yamlConfig['entity'])->findOneBy($search);
-                        }else{
-                            $workingObject = null;
-                        }
+                    // do not proceed if errors
+                    if ($headerErrors === true){break;}
+                }else{
+
+                    $queryArray = array();
+                    foreach ($queryKeys as $key => $value){
+                        $queryArray[$key] = $row[$value];
+                    }
+
+                    // query existing object
+                    if (method_exists($repo, 'fastImportQuery')){
+                        $workingObject = $repo->fastImportQuery($queryArray);
+                    }elseif(\count($queryArray) > 0){
+                        $workingObject = $repo->findOneBy($queryArray);
                     }else{
                         $workingObject = null;
                     }
 
-                    $lineChanges = 0;
-                    if (null === $workingObject && count($search) == count($this->importConfig['keys'])){
-                        $workingObject = new $this->yamlConfig['entity_class'];
-                        foreach ($this->importConfig['headers'] as $pos=>$headerKey){//parse entity setters
-                            if (strlen($dataLine[$pos]) > 0){
-                                switch($structureArray[$headerKey]->getType()){//type checking
-                                    case 'Entity':
-                                        $item = $structureArray[$headerKey]->getRepo()->findOneBy(array(
-                                            isset($this->importConfig['entity_search'][$headerKey]) ? $this->importConfig['entity_search'][$headerKey] :
-                                                $nameConverter->denormalize($structureArray[$headerKey]->getForeignKey()['column'])
-                                            => $dataLine[$pos]
-                                        ));
-                                        $newValue = ($item ? $item : null);
-                                        break;
-                                    case 'Boolean':
-                                        if (in_array(trim(strtolower($dataLine[$pos])), ['true', 'yes', '1'])){
-                                            $newValue = 1;
-                                        }else{
-                                            $newValue = 0;
-                                        }
-                                        break;
-                                    case 'Date':
-                                        $newValue = new \DateTime($dataLine[$pos]);
-                                        break;
-                                    default:
-                                        $newValue = trim($dataLine[$pos]);
-                                }
+                    // create new object
+                    if ($workingObject === null && $updateOnly === false){
+                        $workingObject = new $this->yamlConfig['entity_class']();
+                        $persist = true;
+                    }else{
+                        $persist = false;
+                    }
 
-                                $setter = 'set' . ucfirst($headerKey);
-                                $workingObject->$setter($newValue);
-                                $lineChanges++;
-                            }
-                        }
-                        if ($lineChanges > 0){
-                            // set user and date created if methods exist
-                            !method_exists($workingObject, 'setUserCreated') ?: $workingObject->setUserCreated($user);
-                            !method_exists($workingObject, 'setDateCreated') ?: $workingObject->setDateCreated(new \DateTime());
-                            $countNew++;
-                        }
-                    }elseif(null !== $workingObject){
-                        foreach ($this->importConfig['headers'] as $pos=>$headerKey){
-                            if (strlen($dataLine[$pos]) > 0){
-                                switch($structureArray[$headerKey]->getType()){//type checking
-                                    case 'Entity':
-                                        $item = $structureArray[$headerKey]->getRepo()->findOneBy(array(
-                                            isset($this->importConfig['entity_search'][$headerKey]) ? $this->importConfig['entity_search'][$headerKey] :
-                                                $nameConverter->denormalize($structureArray[$headerKey]->getForeignKey()['column'])
-                                            => $dataLine[$pos]
-                                        ));
-                                        $newValue = ($item ? $item : null);
-                                        break;
-                                    case 'Boolean':
-                                        if (in_array(trim(strtolower($dataLine[$pos])), ['true', 'yes', '1'])) {
-                                            $newValue = 1;
-                                        } else {
-                                            $newValue = 0;
-                                        }
-                                        break;
-                                    case 'Date':
-                                        $newValue = new \DateTime($dataLine[$pos]);
-                                        break;
-                                    default:
-                                        $newValue = trim($dataLine[$pos]);
-                                }
-                            }elseif(isset($request->get('form')['set_blanks_null'])){
-                                $newValue = null;
-                            }
+                    // transform values
+                    if ($workingObject !== null){
+                        $transformer = new $this->importConfig['transformer'](
+                            $workingObject,
+                            $user,
+                            $row,
+                            $structureArray
+                        );
 
-                            if (array_key_exists('newValue', get_defined_vars())){
-                                $getter = 'get' . ucfirst($headerKey);
-                                if ($newValue != $workingObject->$getter()){
-                                    $setter = 'set' . ucfirst($headerKey);
-                                    $workingObject->$setter($newValue);
-                                    $lineChanges++;
-                                }
+                        method_exists($transformer, 'importerFastTransformer') ? $transformer->importerFastTransformer() : false;
 
-                                unset($newValue);
-                            }
-                        }
-                        if ($lineChanges > 0){
-                            $countUpdated++;
+                        // persist, count
+                        if ($persist === true){
+                            $em->persist($workingObject);
+                            $newCount++;
+                        }else{
+                            $updateCount++;
                         }
                     }
 
-                    if ($lineChanges > 0){
-                        // set user and date updated if methods exist
-                        !method_exists($workingObject, 'setUserUpdated') ?: $workingObject->setUserUpdated($user);
-                        !method_exists($workingObject, 'setDateUpdated') ?: $workingObject->setDateUpdated(new \DateTime());
-                        $em->persist($workingObject);
-                    }
-
+                    // save database changes if batch complete
                     if (($i % $batchSize) === 0){
-                        $em->flush();
-                        $em->clear($this->yamlConfig['entity']);
-                    }
+                        try{
+                            $em->flush();
+                        }catch(\Exception $e){
+                            $processingErrors[] = array(
+                                'code' => $e->getCode(),
+                                'message' => $e->getMessage()
+                            );
 
-                    $workingObject = null;
+                            // break at failed batch
+                            break;
+                        }
+                    }
                 }
+
                 $i++;
             }
-            $em->flush();
-            $em->clear($this->yamlConfig['entity']);
-            fclose($file_h);
 
-            $message = "Upload successful.  ($countNew) New items.  ($countUpdated) Updated items.";
+            // check for processing errors so far
+            if ($processingErrors === []){
+                // save remaining database changes
+                try{
+                    $em->flush();
+                }catch(\Exception $e){
+                    $processingErrors[] = array(
+                        'code' => $e->getCode(),
+                        'message' => $e->getMessage()
+                    );
+                }
+            }
 
-            // dispatch event for logging
-            if ($countNew > 0 || $countUpdated > 0){
+            // close file
+            fclose($fileHandler);
+
+            // check for errors
+            if ($headerErrors === false && $processingErrors === []){
+
+                // check for post-process script, execute
+                if (method_exists($repo, 'postFastImport')){
+                    $repo->postFastImport();
+                }
+
+                // capture finish time, set total time and message strings
+                $endTime = new \DateTime();
+                $totalTimeString = $startTime->diff($endTime)->format('%H:%I:%S');
+                $message = $this->yamlConfig['entity_name'];
+                $message .= " Import completed in ($totalTimeString).  ($newCount) new, ($updateCount) updated.";
+
+                // dispatch event for logging
                 $event = new ImporterImportEvent(array(
                     'class' => $this->yamlConfig['entity_name'],
-                    'new' => $countNew,
-                    'updated' => $countUpdated
+                    'new' => $newCount,
+                    'updated' => $updateCount
                 ));
                 $dispatcher = $this->get('event_dispatcher');
                 $dispatcher->dispatch(ImporterImportEvent::NAME, $event);
-            }
 
-            return $this->render('@JermBundle/Modal/notification.html.twig', array(
-                'message' => $message,
-                'type' => 'success',
-                'refresh' => true
-            ));
-        }
-
-        if (isset($this->importConfig['entity_search'])){
-            foreach ($this->importConfig['entity_search'] as $key=>$val){
-                $structureArray[$key]->setForeignKey(array(
-                        'table'=>$structureArray[$key]->getForeignKey()['table'],
-                        'column'=>$val
-                    )
-                );
+                // return success message to user
+                return $this->render('@JermBundle/Modal/notification.html.twig', array(
+                    'message' => $message,
+                    'refresh' => true
+                ));
             }
         }
 
-        return $this->render('@JermBundle/Modal/import_form.html.twig', array(
-            'entity'=>$entity,
-            'truncate'=>isset($this->importConfig['truncate']) ? $this->importConfig['truncate'] : false,
-            'form'=>$form->createView(),
-            'structure'=>$structureArray,
-            'action'=>'create',
-            'header'=>'Upload data for import (' . $this->yamlConfig['entity_name'] . ' Entity)'
+        return $this->render('@Jerm/importer/modal_form_fast_importer.html.twig', array(
+            'header' => 'Upload data for bulk create/update (' . $this->yamlConfig['page_name']. ')',
+            'form' => $uploadForm->createView(),
+            'structure' => $structureArray,
+            'header_errors' => $headerErrors,
+            'processing_errors' => $processingErrors,
+            'get_template_url' => $this->generateUrl('jerm_bundle_importer_get_template', ['entity' => $entity])
         ));
     }
 
@@ -367,7 +367,7 @@ class ImporterController extends Controller
      * @return Response
      * @throws \Exception
      */
-    public function getTemplateAction($entity)
+    public function getTemplateAction($entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
