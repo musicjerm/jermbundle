@@ -16,7 +16,7 @@ use Musicjerm\Bundle\JermBundle\Model\ColumnBuilder;
 use Musicjerm\Bundle\JermBundle\Model\NavModel;
 use Musicjerm\Bundle\JermBundle\Repository\NotificationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,7 +31,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Yaml\Yaml;
 use Doctrine\ORM\EntityRepository;
 
-class BaseController extends Controller
+class BaseController extends AbstractController
 {
     /**
      * Configuration for DataTables loaded entities

@@ -3,13 +3,13 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Musicjerm\Bundle\JermBundle\Entity\Notification;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class NotificationController extends Controller
+class NotificationController extends AbstractController
 {
     /**
      * @param integer $id

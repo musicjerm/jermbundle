@@ -5,7 +5,7 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 use Musicjerm\Bundle\JermBundle\Events\CrudCreateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudUpdateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudDeleteEvent;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -18,7 +18,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Yaml\Yaml;
 
-class CRUDController extends Controller
+class CRUDController extends AbstractController
 {
     /**
      * Configuration for DataTables loaded entities

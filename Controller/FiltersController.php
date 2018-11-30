@@ -5,14 +5,14 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 use App\Entity\User;
 use Musicjerm\Bundle\JermBundle\Entity\DtFilter;
 use Musicjerm\Bundle\JermBundle\Form\DtFilterType;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class FiltersController extends Controller
+class FiltersController extends AbstractController
 {
     /**
      * @param Request $request

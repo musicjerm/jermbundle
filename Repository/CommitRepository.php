@@ -3,10 +3,11 @@
 namespace Musicjerm\Bundle\JermBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
 
 class CommitRepository extends EntityRepository
 {
-    public function standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filters)
+    public function standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filters): Query
     {
         $qb = $this->createQueryBuilder('c')
             ->orderBy($orderBy, $orderDir)

@@ -3,10 +3,11 @@
 namespace Musicjerm\Bundle\JermBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
 
 class NotificationRepository extends EntityRepository
 {
-    public function standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filters, $user)
+    public function standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filters, $user): Query
     {
         $qb = $this->createQueryBuilder('n')
             ->where('n.user = ?0')

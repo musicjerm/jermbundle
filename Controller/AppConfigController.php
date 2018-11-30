@@ -5,11 +5,11 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 use Musicjerm\Bundle\JermBundle\Form\AppConfigType;
 use Musicjerm\Bundle\JermBundle\Form\DTO\AppConfigData;
 use Musicjerm\Bundle\JermBundle\Model\AppUpdater;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AppConfigController extends Controller
+class AppConfigController extends AbstractController
 {
     /**
      * @return Response

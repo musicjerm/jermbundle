@@ -188,7 +188,10 @@ class Subscriber
         return $this->userUpdated;
     }
 
-    /** @ORM\PrePersist() */
+    /**
+     * @ORM\PrePersist()
+     * @throws \Exception
+     */
     public function setDateCreated(): self
     {
         $this->dateCreated = new \DateTime();
@@ -203,6 +206,7 @@ class Subscriber
     /**
      * @ORM\PrePersist()
      * @ORM\PreUpdate()
+     * @throws \Exception
      */
     public function setDateUpdated(): self
     {

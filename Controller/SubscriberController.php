@@ -9,14 +9,14 @@ use Musicjerm\Bundle\JermBundle\Events\SubscriberCreateEvent;
 use Musicjerm\Bundle\JermBundle\Form\BatchSubscriberModel;
 use Musicjerm\Bundle\JermBundle\Form\BatchSubscriberType;
 use Musicjerm\Bundle\JermBundle\Form\CreateSubscriberType;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
-class SubscriberController extends Controller
+class SubscriberController extends AbstractController
 {
     /**
      * @Route("/subscriber/create/{entity}/{id}", name="jerm_bundle_subscriber_create")

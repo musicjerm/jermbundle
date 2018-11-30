@@ -8,14 +8,14 @@ use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Model\ImporterStructureModel;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Yaml\Yaml;
 
-class ImporterController extends Controller
+class ImporterController extends AbstractController
 {
     /** @var array */
     private $yamlConfig;
