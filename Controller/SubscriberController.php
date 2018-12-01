@@ -10,6 +10,7 @@ use Musicjerm\Bundle\JermBundle\Form\BatchSubscriberModel;
 use Musicjerm\Bundle\JermBundle\Form\BatchSubscriberType;
 use Musicjerm\Bundle\JermBundle\Form\CreateSubscriberType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,10 +25,11 @@ class SubscriberController extends AbstractController
      * @param string $id
      * @param Request $request
      * @param UserInterface|User $user
+     * @param EventDispatcherInterface $dispatcher
      * @return Response
      * @throws \Exception
      */
-    public function createAction($entity, $id, Request $request, UserInterface $user): Response
+    public function createAction($entity, $id, Request $request, UserInterface $user, EventDispatcherInterface $dispatcher): Response
     {
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
         $entityRepoName = 'App:' . ucfirst($nameConverter->denormalize($entity));
@@ -85,7 +87,6 @@ class SubscriberController extends AbstractController
 
         // dispatch event for logging
         $event = new SubscriberCreateEvent($subscription);
-        $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(SubscriberCreateEvent::NAME, $event);
 
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
@@ -98,13 +99,14 @@ class SubscriberController extends AbstractController
 
     /**
      * @Route("/subscriber/batch/{entity}", name="jerm_bundle_subscriber_batch")
+     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface|User $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function batchAction(Request $request, UserInterface $user, $entity): Response
+    public function batchAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
     {
         $ids = $request->get('id') ?: $request->get('batch_subscriber')['id'];
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
@@ -176,7 +178,6 @@ class SubscriberController extends AbstractController
             'sub_count' => $newSubscriberCount,
             'entity' => $entity
         ));
-        $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(SubscriberBatchEvent::NAME, $event);
 
         return $this->render('@JermBundle/Modal/notification.html.twig', array(

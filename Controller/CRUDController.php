@@ -6,6 +6,7 @@ use Musicjerm\Bundle\JermBundle\Events\CrudCreateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudUpdateEvent;
 use Musicjerm\Bundle\JermBundle\Events\CrudDeleteEvent;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -120,13 +121,14 @@ class CRUDController extends AbstractController
     }
 
     /**
+     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function createAction(Request $request, UserInterface $user, $entity): Response
+    public function createAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -216,7 +218,6 @@ class CRUDController extends AbstractController
 
         // dispatch event for logging, etc
         $event = new CrudCreateEvent($workingObject);
-        $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(CrudCreateEvent::NAME, $event);
 
         // if next_path is defined, flash new object id, redirect
@@ -236,6 +237,7 @@ class CRUDController extends AbstractController
     }
 
     /**
+     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
@@ -243,7 +245,7 @@ class CRUDController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function updateAction(Request $request, UserInterface $user, $entity, $id): Response
+    public function updateAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity, $id): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -333,7 +335,6 @@ class CRUDController extends AbstractController
 
         // dispatch event for logging, etc
         $event = new CrudUpdateEvent($workingObject);
-        $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(CrudUpdateEvent::NAME, $event);
 
         // if next_path is defined, flash new object id, redirect
@@ -353,13 +354,14 @@ class CRUDController extends AbstractController
     }
 
     /**
+     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function deleteAction(Request $request, UserInterface $user, $entity): Response
+    public function deleteAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -485,7 +487,6 @@ class CRUDController extends AbstractController
             'class' => $this->yamlConfig['entity_name'],
             'deleted' => $objectStrings
         ));
-        $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(CrudDeleteEvent::NAME, $event);
 
         // render success notification

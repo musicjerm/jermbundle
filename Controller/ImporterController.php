@@ -2,6 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
+use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
 use Musicjerm\Bundle\JermBundle\Events\ImporterImportEvent;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
@@ -9,6 +10,7 @@ use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Model\ImporterStructureModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -94,13 +96,15 @@ class ImporterController extends AbstractController
     }
 
     /**
+     * @param Connection $connection
+     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function fastImport(Request $request, UserInterface $user, $entity): Response
+    public function fastImport(Connection $connection, EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -117,7 +121,7 @@ class ImporterController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         /** @var $sm MySqlSchemaManager */
-        $sm = $this->get('database_connection')->getSchemaManager();
+        $sm = $connection->getSchemaManager();
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
         $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));// create array with new importer model for each column
 
@@ -341,7 +345,7 @@ class ImporterController extends AbstractController
                     'new' => $newCount,
                     'updated' => $updateCount
                 ));
-                $dispatcher = $this->get('event_dispatcher');
+
                 $dispatcher->dispatch(ImporterImportEvent::NAME, $event);
 
                 // return success message to user
