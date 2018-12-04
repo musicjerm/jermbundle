@@ -283,8 +283,15 @@ class ImporterController extends AbstractController
 
                         // persist, count
                         if ($persist === true){
-                            $em->persist($workingObject);
-                            $newCount++;
+                            try{
+                                $em->persist($workingObject);
+                                $newCount++;
+                            }catch(\Exception $e){
+                                $processingErrors[] = array(
+                                    'code' => $e->getCode(),
+                                    'message' => $e->getMessage()
+                                );
+                            }
                         }else{
                             $updateCount++;
                         }
@@ -299,10 +306,12 @@ class ImporterController extends AbstractController
                                 'code' => $e->getCode(),
                                 'message' => $e->getMessage()
                             );
-
-                            // break at failed batch
-                            break;
                         }
+                    }
+
+                    // if errors, stop the loop
+                    if (\count($processingErrors) > 0){
+                        break;
                     }
                 }
 
