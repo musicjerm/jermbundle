@@ -61,6 +61,12 @@ class Notification
      */
     private $class;
 
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=128, nullable=true)
+     */
+    private $hyperlink;
+
     public function __toString(): string
     {
         return $this->getSubject();
@@ -165,5 +171,16 @@ class Notification
     public function getClass(): ?string
     {
         return $this->class;
+    }
+
+    public function setHyperlink(?string $hyperlink): self
+    {
+        $this->hyperlink = $hyperlink;
+        return $this;
+    }
+
+    public function getHyperlink(): ?string
+    {
+        return $this->hyperlink;
     }
 }

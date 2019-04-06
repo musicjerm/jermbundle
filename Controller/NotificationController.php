@@ -35,6 +35,10 @@ class NotificationController extends AbstractController
         $em = $this->getDoctrine()->getManager();
         $em->flush();
 
+        if ($notification->getHyperlink() !== null){
+            return $this->redirect($notification->getHyperlink());
+        }
+
         return $this->render('@JermBundle/Modal/notification_view.html.twig', array(
             'notification' => $notification,
             'notification_status' => $status
