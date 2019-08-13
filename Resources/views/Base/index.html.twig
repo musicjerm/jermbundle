@@ -50,7 +50,7 @@
                             {{ render(controller('App\\Controller\\HeaderController::renderAction')) }}
 
                             <li class="dropdown notifications-menu">
-                                {{ render(controller('JermBundle:Base:message')) }}
+                                {{ render(controller('Musicjerm\\Bundle\\JermBundle\\Controller\\BaseController::messageAction')) }}
                             </li>
 
                         {% endif %}
@@ -100,7 +100,7 @@
 
     <aside class="main-sidebar">
         <section class="sidebar">
-            {{ render(controller('JermBundle:Base:nav', {
+            {{ render(controller('Musicjerm\\Bundle\\JermBundle\\Controller\\BaseController::navAction', {
                 'current_route': app.request.attributes.get('_route'),
                 'current_params': app.request.attributes.get('_route_params')
             })) }}
