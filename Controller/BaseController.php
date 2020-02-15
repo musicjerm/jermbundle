@@ -181,10 +181,10 @@ class BaseController extends AbstractController
 
         foreach ($this->yamlConfig['filters'] as $filter){
             switch ($filter['type']){
-                case 'Text';
+                case 'Text':
                     $filtersForm->add($filter['name'], TextType::class, isset($filter['array']) ? $filter['array'] : []);
                     break;
-                case 'Entity';
+                case 'Entity':
                     if (isset($filter['restrict_location_and_active']) && $filter['restrict_location_and_active'] === true){
                         $filter['array']['query_builder'] = function(EntityRepository $er){
                             return $er->createQueryBuilder('f')
@@ -221,7 +221,7 @@ class BaseController extends AbstractController
                     }
                     $filtersForm->add($filter['name'], EntityType::class, $filter['array']);
                     break;
-                case 'Choice';
+                case 'Choice':
                     if (isset($filter['entity_group']) && $filter['entity_group'] == true){
                         $er = $this->getDoctrine()->getRepository($filter['entity_class']);
                         $query = $filter['entity_query'];
@@ -241,7 +241,7 @@ class BaseController extends AbstractController
                     }
                     $filtersForm->add($filter['name'], ChoiceType::class, $filter['array']);
                     break;
-                case 'DateRange';
+                case 'DateRange':
                     $filtersForm->add($filter['name'], TextType::class, array(
                         'label'=> isset($filter['array']['label']) ? $filter['array']['label'] : null
                     ));
