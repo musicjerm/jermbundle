@@ -287,11 +287,26 @@ class BaseController extends AbstractController
             $column_preset = $this->loadedConfig->getId();
         }
 
+        /**
+         * set active filter preset
+         * @var DtFilter $primaryFilter
+         */
+        $dtFilterRepo = $this->getDoctrine()->getRepository('JermBundle:DtFilter');
+        if ($filter_preset >= 0){
+            $primaryFilter = $dtFilterRepo->find($filter_preset);
+            if ($primaryFilter && $primaryFilter->getEntity() !== $entity){
+                $primaryFilter = null;
+            }
+        }else{
+            $primaryFilter = $dtFilterRepo->findOneBy(['user' => $user, 'entity' => $entity, 'isPrimary' => true]);
+        }
+
         // check for filters - create form
         if (class_exists($this->filterType)){
             $filtersForm = $this->createForm("$this->filterType", null, array(
                 'action' => $this->generateUrl('jerm_bundle_data_get_csv', ['entity' => $entity, 'columnPreset' => $column_preset]),
-                'attr' => ['id' => 'standard_data_filters_form']
+                'attr' => ['id' => 'standard_data_filters_form'],
+                'filter_preset' => $primaryFilter
             ));
         }elseif(isset($this->yamlConfig['filters'])){
             $filtersForm = $this->createFiltersForm($entity, $user, $column_preset);
@@ -314,20 +329,6 @@ class BaseController extends AbstractController
             'user' => $user,
             'entity' => $entity
         ));
-
-        /**
-         * set active filter preset
-         * @var DtFilter $primaryFilter
-         */
-        $dtFilterRepo = $this->getDoctrine()->getRepository('JermBundle:DtFilter');
-        if ($filter_preset >= 0){
-            $primaryFilter = $dtFilterRepo->find($filter_preset);
-            if ($primaryFilter && $primaryFilter->getEntity() !== $entity){
-                $primaryFilter = null;
-            }
-        }else{
-            $primaryFilter = $dtFilterRepo->findOneBy(['user' => $user, 'entity' => $entity, 'isPrimary' => true]);
-        }
         $filterPresetForm->get('selectPreset')->setData($primaryFilter);
 
         // define preset data if exists

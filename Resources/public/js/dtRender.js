@@ -304,7 +304,8 @@ $(document).ready(function(){
     clearFiltersBtn.on('click', function(){
         filtersControlText.val('');
         filtersControl.val('');
-        $('.select2').select2({data: {id:null, text:null}});
+        $('.select2query').prepend('<option selected="selected"></option>');
+        $('#standard_data_filters_form .select2').val(null).trigger("change");
         $("#standard_data_filters_form input:text").first().focus();
         dataInfoDataTable.ajax.reload();
     });
