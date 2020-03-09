@@ -60,11 +60,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for option, value in config if option != 'remote.origin.url' %}
-                        <tr>
-                            <td>{{ option }}</td>
-                            <td>{{ value }}</td>
-                        </tr>
+                    {% for option, value in config %}
+                        {% if option != 'remote.origin.url' %}
+                            <tr>
+                                <td>{{ option }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
                     </tbody>
                 </table>
