@@ -11,6 +11,17 @@
     {% endif %}
 {%- endblock text_widget %}
 
+{% block number_widget -%}
+    {% if addon_icon is defined %}
+        <div class="input-group">
+            <span class="input-group-addon"><i class="fa {{ addon_icon }}"></i></span>
+            {{- block('form_widget_simple') -}}
+        </div>
+    {% else %}
+        {{- block('form_widget_simple') -}}
+    {% endif %}
+{%- endblock number_widget %}
+
 {% block email_widget -%}
     <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
