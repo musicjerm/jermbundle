@@ -33,7 +33,7 @@ class ImporterController extends AbstractController
     private function setYamlConfig($configName): bool
     {
         $configDirs = array(
-            $this->getParameter('kernel.root_dir') . '/JBConfig/Entity',
+            $this->getParameter('kernel.project_dir') . '/src/JBConfig/Entity',
             $this->getParameter('kernel.project_dir') . '/vendor/musicjerm/jermbundle/Resources/config/Entity'
         );
 

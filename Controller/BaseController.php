@@ -70,7 +70,7 @@ class BaseController extends AbstractController
     private function setYamlConfig($configName, $user, $reset = false, $columnPreset = -1)
     {
         $configDirs = array(
-            $this->getParameter('kernel.root_dir') . '/JBConfig/Entity',
+            $this->getParameter('kernel.project_dir') . '/src/JBConfig/Entity',
             $this->getParameter('kernel.project_dir') . '/vendor/musicjerm/jermbundle/Resources/config/Entity'
         );
 
@@ -888,7 +888,7 @@ class BaseController extends AbstractController
      */
     public function navAction(Request $request, UserInterface $user = null)
     {
-        $configDir = $this->getParameter('kernel.root_dir') . '/JBConfig';
+        $configDir = $this->getParameter('kernel.project_dir') . '/src/JBConfig';
 
         /** @var FileLocator $fileLocator */
         $fileLocator = new FileLocator([$configDir]);
