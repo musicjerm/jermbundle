@@ -2,7 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
-use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
 use Musicjerm\Bundle\JermBundle\Events\ImporterImportEvent;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
@@ -121,7 +121,7 @@ class ImporterController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         /** @var $sm MySqlSchemaManager */
-        $sm = $connection->getSchemaManager();
+        $sm = $connection->createSchemaManager();
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
         $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));// create array with new importer model for each column
 
@@ -158,14 +158,14 @@ class ImporterController extends AbstractController
                 $structureArray[$ic]->foreignKey = $columnFks[$ic];
                 $structureArray[$ic]->repo = $em->getRepository('App:'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table'])));
             }else{
-                $structureArray[$ic]->type = $columnList[$nameConverter->normalize($ic)]->getType();
+                $structureArray[$ic]->type = $columnList[$nameConverter->normalize($ic)]->getType()->getName();
             }
-            $structureArray[$ic]->required = $columnList[$nameConverter->normalize($ic)]->getNotnull() ? true : false;
+            $structureArray[$ic]->required = $columnList[$nameConverter->normalize($ic)]->getNotnull();
             if ($columnList[$nameConverter->normalize($ic)]->getLength()){
                 $structureArray[$ic]->length = $columnList[$nameConverter->normalize($ic)]->getLength();
             }
-            $structureArray[$ic]->primary = isset($columnIndexes[$nameConverter->normalize($ic)]['primary']) ? true : false;
-            $structureArray[$ic]->unique = isset($columnIndexes[$nameConverter->normalize($ic)]['unique']) ? true : false;
+            $structureArray[$ic]->primary = isset($columnIndexes[$nameConverter->normalize($ic)]['primary']);
+            $structureArray[$ic]->unique = isset($columnIndexes[$nameConverter->normalize($ic)]['unique']);
 
             if (\in_array($key, $this->importConfig['keys'], true)){
                 $structureArray[$ic]->primary = true;
