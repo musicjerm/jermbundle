@@ -643,7 +643,7 @@ class BaseController extends AbstractController
             $tempArray = array();
             foreach ($columnBuilder->getColumns() as $col){
                 if($col['dumpable'] && count($object = explode('.', $col['data'])) > 1 && method_exists($item, $getter = 'get'.ucfirst($object[0]))){
-                    if (count($object) > 2 && method_exists($item->$getter(), $getter1 = 'get'.ucfirst($object[1]))){
+                    if (count($object) > 2 && $item->$getter() !== null && method_exists($item->$getter(), $getter1 = 'get'.ucfirst($object[1]))){
                         if (count($object) > 3 && method_exists($item->$getter()->$getter1(), $getter2 = 'get'.ucfirst($object[2]))){
                             $getter3 = 'get'.ucfirst($object[3]);
                             $tempArray[] = $item->$getter() && $item->$getter()->$getter1() && $item->$getter()->$getter1()->$getter2() ? $item->$getter()->$getter1()->$getter2()->$getter3() : null;
