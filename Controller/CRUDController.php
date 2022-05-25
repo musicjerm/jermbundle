@@ -212,8 +212,18 @@ class CRUDController extends AbstractController
             method_exists($workingObject, 'getFile') &&
             $workingObject->getFile()
         ){
-            $fileSavePath = $this->fileSavePath.$workingObject->getId();
-            $workingObject->getFile()->move($fileSavePath, $workingObject->getFile()->getClientOriginalName());
+            // pass this responsibility to upload controller if present
+            if (method_exists('App\Controller\UploadController', 'saveEntityFile')){
+                $this->forward('App\Controller\UploadController::saveEntityFile', array(
+                    'entity' => $this->yamlConfig['entity_name'],
+                    'entityId' => $workingObject->getId(),
+                    'uploadedFile' => $workingObject->getFile(),
+                    'user' => $user
+                ));
+            }else{
+                $fileSavePath = $this->fileSavePath.$workingObject->getId();
+                $workingObject->getFile()->move($fileSavePath, $workingObject->getFile()->getClientOriginalName());
+            }
         }
 
         // dispatch event for logging, etc
@@ -324,10 +334,21 @@ class CRUDController extends AbstractController
         // check for submitted files, delete old, save new
         if (method_exists($workingObject, 'setDocument') && method_exists($workingObject, 'getFile') && $workingObject->getFile()){
             $workingObject->setDocument($workingObject->getFile()->getClientOriginalName());
-            $this->setFileSavePath($this->yamlConfig['entity_name'], $workingObject->getId());
-            $fs = new Filesystem();
-            $fs->remove($this->fileSavePath);
-            $workingObject->getFile()->move($this->fileSavePath, $workingObject->getDocument());
+
+            // pass this responsibility to upload controller if present
+            if (method_exists('App\Controller\UploadController', 'saveEntityFile')){
+                $this->forward('App\Controller\UploadController::saveEntityFile', array(
+                    'entity' => $this->yamlConfig['entity_name'],
+                    'entityId' => $id,
+                    'uploadedFile' => $workingObject->getFile(),
+                    'user' => $user
+                ));
+            }else{
+                $this->setFileSavePath($this->yamlConfig['entity_name'], $workingObject->getId());
+                $fs = new Filesystem();
+                $fs->remove($this->fileSavePath);
+                $workingObject->getFile()->move($this->fileSavePath, $workingObject->getDocument());
+            }
         }
 
         // flush database
@@ -450,9 +471,18 @@ class CRUDController extends AbstractController
         foreach ($deleteArray as $key => $item){
             if ($item['delete']){
                 // check for files and delete them
-                $this->setFileSavePath($this->yamlConfig['entity_name'], $key);
-                $fs = new Filesystem();
-                $fs->remove($this->fileSavePath);
+                // pass this responsibility to upload controller if present
+                if (method_exists('App\Controller\UploadController', 'removeEntityFile')){
+                    $this->forward('App\Controller\UploadController::removeEntityFile', array(
+                        'entity' => $this->yamlConfig['entity_name'],
+                        'entityId' => $key
+                    ));
+                }else{
+                    $this->setFileSavePath($this->yamlConfig['entity_name'], $key);
+                    $fs = new Filesystem();
+                    $fs->remove($this->fileSavePath);
+                }
+
                 !method_exists($item['object'], 'setDocument') ?: $item['object']->setDocument(null);
 
                 // get object string for logging
@@ -522,6 +552,14 @@ class CRUDController extends AbstractController
 
         // check permissions
         $this->checkPermissions('item', 'jerm_bundle_get_file', $user, $workingObject);
+
+        // pass this responsibility to upload controller if present
+        if (method_exists('App\Controller\UploadController', 'downloadAttachment')){
+            return $this->forward('App\Controller\UploadController::downloadAttachment', array(
+                'entity' => $this->yamlConfig['entity_name'],
+                'entityId' => $id
+            ));
+        }
 
         $this->setFileSavePath($this->yamlConfig['entity_name'], $workingObject->getId());
 
