@@ -20,7 +20,7 @@ class FilterPresetType extends AbstractType
 
         $builder
             ->add('selectPreset', EntityType::class, array(
-                'class' => 'JermBundle:DtFilter',
+                'class' => 'Musicjerm\Bundle\JermBundle\Entity\DtFilter',
                 'query_builder' => function(EntityRepository $er){
                     return $er->createQueryBuilder('dt')
                         ->where('dt.user = ?0')

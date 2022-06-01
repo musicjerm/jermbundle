@@ -1,4 +1,4 @@
-entity: 'JermBundle:Notification'
+entity: 'Musicjerm\Bundle\JermBundle\Entity\Notification'
 role: 'ROLE_USER'
 page_name: 'Notifications'
 

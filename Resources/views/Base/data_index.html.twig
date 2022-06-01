@@ -80,6 +80,11 @@
                             <option {% if setting_rpp == 10 %}selected{% endif %}>10</option>
                             <option {% if setting_rpp == 20 %}selected{% endif %}>20</option>
                             <option {% if setting_rpp == 50 %}selected{% endif %}>50</option>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <option {% if setting_rpp == 100 %}selected{% endif %}>100</option>
+                                <option {% if setting_rpp == 500 %}selected{% endif %}>500</option>
+                                <option {% if setting_rpp == 1000 %}selected{% endif %}>1000</option>
+                            {%endif%}
                         </select>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-entity: 'JermBundle:Commit'
+entity: 'Musicjerm\Bundle\JermBundle\Entity\Commit'
 role: 'ROLE_USER'
 page_name: 'Git Repository Commits'
 

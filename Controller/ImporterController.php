@@ -156,7 +156,7 @@ class ImporterController extends AbstractController
             if (isset($columnFks[$ic])){
                 $structureArray[$ic]->type = 'Entity';
                 $structureArray[$ic]->foreignKey = $columnFks[$ic];
-                $structureArray[$ic]->repo = $em->getRepository('App:'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table'])));
+                $structureArray[$ic]->repo = $em->getRepository('App\Entity\\'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table'])));
             }else{
                 $structureArray[$ic]->type = $columnList[$nameConverter->normalize($ic)]->getType()->getName();
             }

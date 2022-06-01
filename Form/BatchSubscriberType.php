@@ -19,7 +19,7 @@ class BatchSubscriberType extends AbstractType
         if ($options['is_manager']){
             $builder->add('users', EntityType::class, array(
                 'choice_label' => 'username',
-                'class' => 'App:User',
+                'class' => \App\Entity\User::class,
                 'query_builder' => function(EntityRepository $er){
                     return $er->createQueryBuilder('u')
                         ->where('u.isActive = ?0')

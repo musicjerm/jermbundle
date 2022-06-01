@@ -32,10 +32,10 @@ class SubscriberController extends AbstractController
     public function createAction($entity, $id, Request $request, UserInterface $user, EventDispatcherInterface $dispatcher): Response
     {
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
-        $entityRepoName = 'App:' . ucfirst($nameConverter->denormalize($entity));
+        $entityRepoName = 'App\Entity\\' . ucfirst($nameConverter->denormalize($entity));
 
         /** @var Subscriber $subscription */
-        $subscriptionRepo = $this->getDoctrine()->getRepository('JermBundle:Subscriber');
+        $subscriptionRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\Subscriber');
         $subscription = $subscriptionRepo->findOneBy(array(
             'entity' => $entity,
             'entityId' => $request->get('id'),
@@ -110,7 +110,7 @@ class SubscriberController extends AbstractController
     {
         $ids = $request->get('id') ?: $request->get('batch_subscriber')['id'];
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
-        $entityRepoName = 'App:' . ucfirst($nameConverter->denormalize($entity));
+        $entityRepoName = 'App\Entity\\' . ucfirst($nameConverter->denormalize($entity));
         $entityRepo = $this->getDoctrine()->getRepository($entityRepoName);
         $entityLines = array();
 
@@ -141,7 +141,7 @@ class SubscriberController extends AbstractController
         }
 
         $em = $this->getDoctrine()->getManager();
-        $subscriberRepo = $em->getRepository('JermBundle:Subscriber');
+        $subscriberRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\Subscriber');
 
         $newSubscriberCount = 0;
         $subbedUsers = array();

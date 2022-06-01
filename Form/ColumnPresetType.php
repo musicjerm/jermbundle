@@ -20,7 +20,7 @@ class ColumnPresetType extends AbstractType
 
         $builder
             ->add('selectLayout', EntityType::class, array(
-                'class' => 'JermBundle:DtConfig',
+                'class' => 'Musicjerm\Bundle\JermBundle\Entity\DtConfig',
                 'query_builder' => function(EntityRepository $er){
                     return $er->createQueryBuilder('dt')
                         ->where('dt.user = ?0')

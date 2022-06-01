@@ -125,7 +125,7 @@ class BaseController extends AbstractController
 
         // if primary config exists, set as loaded config
         $em = $this->getDoctrine()->getManager();
-        $dtConfigRepo = $em->getRepository('JermBundle:DtConfig');
+        $dtConfigRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtConfig');
 
         // scan column presets and remove any with invalid column count
         /** @var DtConfig $config */
@@ -291,7 +291,7 @@ class BaseController extends AbstractController
          * set active filter preset
          * @var DtFilter $primaryFilter
          */
-        $dtFilterRepo = $this->getDoctrine()->getRepository('JermBundle:DtFilter');
+        $dtFilterRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
         if ($filter_preset >= 0){
             $primaryFilter = $dtFilterRepo->find($filter_preset);
             if ($primaryFilter && $primaryFilter->getEntity() !== $entity){
@@ -463,9 +463,9 @@ class BaseController extends AbstractController
         isset($filterData) ?: $filterData = null;
 
         // set user's length setting
-        if (method_exists($user, 'getSettingRpp') && method_exists($user, 'setSettingRpp') && $user->getSettingRpp() !== intval($maxResults)){
+        if (method_exists($user, 'getSettingRpp') && method_exists($user, 'setSettingRpp') && $user->getSettingRpp() !== (int) $maxResults){
             $em = $this->getDoctrine()->getManager();
-            $user->setSettingRpp(intval($maxResults));
+            $user->setSettingRpp((int) $maxResults);
             $em->flush();
         }
 
@@ -599,7 +599,7 @@ class BaseController extends AbstractController
                  * populate filters if requested in api route
                  * @var DtFilter $selectedFilter
                  */
-                $dtFilterRepo = $this->getDoctrine()->getRepository('JermBundle:DtFilter');
+                $dtFilterRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
                 $selectedFilter = $dtFilterRepo->find($filter_preset);
                 if ($selectedFilter && $selectedFilter->getEntity() === $entity){
                     $dataString = $selectedFilter->getData();
@@ -755,7 +755,7 @@ class BaseController extends AbstractController
          * @var DtConfig $dtConfig
          */
         if ($workingConfig->getIsPrimary()){
-            $dtConfigRepo = $em->getRepository('JermBundle:DtConfig');
+            $dtConfigRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtConfig');
             foreach ($dtConfigRepo->findBy(['user' => $user, 'entity' => $entity, 'isPrimary' => true]) as $dtConfig){
                 $dtConfig->setIsPrimary(false);
             }
@@ -789,7 +789,7 @@ class BaseController extends AbstractController
         /**
          * @var DtConfig $workingConfig
          */
-        $dtConfigRepo = $em->getRepository('JermBundle:DtConfig');
+        $dtConfigRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtConfig');
         $workingConfig = $dtConfigRepo->find($id);
 
         if (!$workingConfig){
@@ -863,7 +863,7 @@ class BaseController extends AbstractController
         /**
          * @var DtConfig $dtConfig
          */
-        $dtConfigRepo = $em->getRepository('JermBundle:DtConfig');
+        $dtConfigRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtConfig');
         $dtConfig = $dtConfigRepo->find($id);
 
         if (!$dtConfig || !$dtConfig->getEntity()){
@@ -931,9 +931,9 @@ class BaseController extends AbstractController
         /**
          * @var NotificationRepository $notificationRepo
          */
-        $notificationRepo = $this->getDoctrine()->getRepository('JermBundle:Notification');
+        $notificationRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
         $messages = $notificationRepo->getLatest($user);
-        $unreadCount = intval($notificationRepo->countUnread($user)[0][1]);
+        $unreadCount = (int) $notificationRepo->countUnread($user)[0][1];
 
         return $this->render('@JermBundle/Base/messages.html.twig', array(
             'plurality' => $unreadCount === 1 ? 'notification' : 'notifications',

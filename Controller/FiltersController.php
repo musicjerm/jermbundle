@@ -52,7 +52,7 @@ class FiltersController extends AbstractController
         $em->persist($dtFilter);
 
         if ($dtFilter->getIsPrimary()){
-            $dtFilterRepo = $em->getRepository('JermBundle:DtFilter');
+            $dtFilterRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
             /** @var DtFilter $filter */
             foreach ($dtFilterRepo->findBy(['user' => $user, 'entity' => $entity, 'isPrimary' => true]) as $filter){
                 $filter->setIsPrimary(false);
@@ -79,7 +79,7 @@ class FiltersController extends AbstractController
     public function updateAction(Request $request, UserInterface $user, $entity, $id)
     {
         $em = $this->getDoctrine()->getManager();
-        $dtFilterRepo = $em->getRepository('JermBundle:DtFilter');
+        $dtFilterRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
 
         /** @var DtFilter $dtFilter */
         $dtFilter = $dtFilterRepo->find($id);
@@ -106,7 +106,7 @@ class FiltersController extends AbstractController
         }
 
         if ($dtFilter->getIsPrimary()){
-            $dtFilterRepo = $em->getRepository('JermBundle:DtFilter');
+            $dtFilterRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
             /** @var DtFilter $filter */
             foreach ($dtFilterRepo->findBy(['user' => $user, 'entity' => $entity, 'isPrimary' => true]) as $filter){
                 $filter->setIsPrimary(false);
@@ -134,7 +134,7 @@ class FiltersController extends AbstractController
         /**
          * @var DtFilter $dtFilter
          */
-        $dtFilterRepo = $em->getRepository('JermBundle:DtFilter');
+        $dtFilterRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
         $dtFilter = $dtFilterRepo->find($id);
 
         if (!$dtFilter || !$dtFilter->getEntity()){

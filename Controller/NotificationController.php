@@ -18,7 +18,7 @@ class NotificationController extends AbstractController
     public function viewAction($id)
     {
         /** @var Notification $notification */
-        $notificationRepo = $this->getDoctrine()->getRepository('JermBundle:Notification');
+        $notificationRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
         $notification = $notificationRepo->find($id);
 
         if (null === $notification){
@@ -53,7 +53,7 @@ class NotificationController extends AbstractController
     public function markReadAction(Request $request, UserInterface $user)
     {
         $em = $this->getDoctrine()->getManager();
-        $notificationRepo = $em->getRepository('JermBundle:Notification');
+        $notificationRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
 
         foreach ($request->get('id') as $id){
             $notification = $notificationRepo->find($id);
