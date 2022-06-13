@@ -4,14 +4,14 @@ namespace Musicjerm\Bundle\JermBundle\Model;
 
 class CSVDataModel
 {
-    private $columnNames;
-    private $data;
+    private array $columnNames;
+    private array $data;
 
     /**
      * @param array $columnNames
      * @return CSVDataModel
      */
-    public function setColumnNames($columnNames){
+    public function setColumnNames(array $columnNames): self{
         $this->columnNames = $columnNames;
         return $this;
     }
@@ -20,14 +20,16 @@ class CSVDataModel
      * @param array $data
      * @return $this
      */
-    public function setData($data){
+    public function setData(array $data): self{
         $this->data = $data;
         return $this;
     }
 
     public function buildCsv(){
-        $output = fopen('php://temp', 'r+');
-        fputcsv($output, $this->columnNames);
+        $output = fopen('php://temp', 'rb+');
+        if (isset($this->columnNames)){
+            fputcsv($output, $this->columnNames);
+        }
         foreach($this->data as $line){
             fputcsv($output, $line);
         }
