@@ -228,7 +228,7 @@ class CRUDController extends AbstractController
 
         // dispatch event for logging, etc
         $event = new CrudCreateEvent($workingObject);
-        $dispatcher->dispatch(CrudCreateEvent::NAME, $event);
+        $dispatcher->dispatch($event);
 
         // if next_path is defined, flash new object id, redirect
         if ($form->has('next_path') && method_exists($workingObject, 'getId') && $form->get('next_path')->getData() !== null){
@@ -356,7 +356,7 @@ class CRUDController extends AbstractController
 
         // dispatch event for logging, etc
         $event = new CrudUpdateEvent($workingObject);
-        $dispatcher->dispatch(CrudUpdateEvent::NAME, $event);
+        $dispatcher->dispatch($event);
 
         // if next_path is defined, flash new object id, redirect
         if ($form->has('next_path') && method_exists($workingObject, 'getId') && $form->get('next_path')->getData() !== null){
@@ -517,7 +517,7 @@ class CRUDController extends AbstractController
             'class' => $this->yamlConfig['entity_name'],
             'deleted' => $objectStrings
         ));
-        $dispatcher->dispatch(CrudDeleteEvent::NAME, $event);
+        $dispatcher->dispatch($event);
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(

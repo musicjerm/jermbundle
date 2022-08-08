@@ -87,7 +87,7 @@ class SubscriberController extends AbstractController
 
         // dispatch event for logging
         $event = new SubscriberCreateEvent($subscription);
-        $dispatcher->dispatch(SubscriberCreateEvent::NAME, $event);
+        $dispatcher->dispatch($event);
 
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
             'message' => $successMessage,
@@ -178,7 +178,7 @@ class SubscriberController extends AbstractController
             'sub_count' => $newSubscriberCount,
             'entity' => $entity
         ));
-        $dispatcher->dispatch(SubscriberBatchEvent::NAME, $event);
+        $dispatcher->dispatch($event);
 
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
             'message' => 'Subscribers created',

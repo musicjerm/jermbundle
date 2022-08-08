@@ -355,7 +355,7 @@ class ImporterController extends AbstractController
                     'updated' => $updateCount
                 ));
 
-                $dispatcher->dispatch(ImporterImportEvent::NAME, $event);
+                $dispatcher->dispatch($event);
 
                 // return success message to user
                 return $this->render('@JermBundle/Modal/notification.html.twig', array(

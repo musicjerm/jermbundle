@@ -2,7 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Events;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * jermbundle.subscriber_batch event
