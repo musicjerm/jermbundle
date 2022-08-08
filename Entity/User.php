@@ -91,9 +91,25 @@ class User implements UserInterface, \Serializable
         ));
     }
 
+    public function __serialize(): array
+    {
+        return array(
+            'id' => $this->id,
+            'username' => $this->username,
+            'password' => $this->password
+        );
+    }
+
     public function unserialize($serialized): void
     {
         [$this->id, $this->username, $this->password] = unserialize($serialized, ['allowed_classes' => [self::class]]);
+    }
+
+    public function __unserialize($serialized): void
+    {
+        $this->id = $serialized['id'];
+        $this->username = $serialized['username'];
+        $this->password = $serialized['password'];
     }
 
     public function getSalt()
