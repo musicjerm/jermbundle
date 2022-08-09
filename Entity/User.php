@@ -112,9 +112,14 @@ class User implements UserInterface, \Serializable
         $this->password = $serialized['password'];
     }
 
-    public function getSalt()
+    public function getSalt(): ?string
     {
         //handled by BCRYPT
         return null;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
     }
 }
