@@ -2,45 +2,42 @@
 
 namespace Musicjerm\Bundle\JermBundle\Model;
 
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Security\Core\Security;
 
 class NavModel
 {
     /** @var array $navData */
-    private $navData;
+    private array $navData;
 
     /** @var string $currentRoute */
-    private $currentRoute;
+    private string $currentRoute;
 
     /** @var mixed $currentParams */
-    private $currentParams;
+    private mixed $currentParams;
 
     /** @var string $defaultIcon */
-    private $defaultIcon = 'fa-circle-o';
-
-    /** @var array $userRoles */
-    private $userRoles;
+    private string $defaultIcon = 'fa-circle-o';
 
     /** @var array $navOutput */
-    private $navOutput = array();
+    private array $navOutput = array();
 
-    /** @var AuthorizationChecker $context */
-    private $authChecker;
+    /** @var Security $security */
+    private Security $security;
 
     /**
      * NavModel constructor.
-     * @param AuthorizationChecker $authChecker
+     * @param Security $security
      */
-    public function __construct(AuthorizationChecker $authChecker)
+    public function __construct(Security $security)
     {
-        $this->authChecker = $authChecker;
+        $this->security = $security;
     }
 
     /**
      * @param array $navData
      * @return NavModel
      */
-    public function setNavData($navData)
+    public function setNavData(array $navData): self
     {
         $this->navData = $navData;
         return $this;
@@ -50,7 +47,7 @@ class NavModel
      * @param string $currentRoute
      * @return NavModel
      */
-    public function setCurrentRoute($currentRoute)
+    public function setCurrentRoute(string $currentRoute): self
     {
         $this->currentRoute = $currentRoute;
         return $this;
@@ -60,34 +57,16 @@ class NavModel
      * @param mixed $currentParams
      * @return NavModel
      */
-    public function setCurrentParams($currentParams)
+    public function setCurrentParams(mixed $currentParams): self
     {
         $this->currentParams = $currentParams;
         return $this;
     }
 
     /**
-     * @param string $defaultIcon
-     * @return NavModel
-     */
-    public function setDefaultIcon($defaultIcon)
-    {
-        $this->defaultIcon = $defaultIcon;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getNavData()
-    {
-        return $this->navData;
-    }
-
-    /**
      * @return string
      */
-    public function getCurrentRoute()
+    public function getCurrentRoute(): string
     {
         return $this->currentRoute;
     }
@@ -95,74 +74,47 @@ class NavModel
     /**
      * @return mixed
      */
-    public function getCurrentParams()
+    public function getCurrentParams(): mixed
     {
         return $this->currentParams;
     }
 
-    /**
-     * @return string
-     */
-    public function getDefaultIcon()
-    {
-        return $this->defaultIcon;
-    }
-
-    /**
-     * @param array $userRoles
-     * @return NavModel
-     */
-    public function setUserRoles($userRoles)
-    {
-        $this->userRoles = $userRoles;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getUserRoles()
-    {
-        return $this->userRoles;
-    }
-
     /** @return NavModel */
-    public function buildNav()
+    public function buildNav(): self
     {
-        if (is_array($this->navData)){
             // level 1
             foreach ($this->navData as $navKey=>$value){
-                if (isset($value['route']) && isset($value['role']) && $this->authChecker->isGranted($value['role'])){
-                    $params = isset($value['parameters']) ? $value['parameters'] : null;
+                if (isset($value['route'], $value['role']) && $this->security->isGranted($value['role'])){
+                    $params = $value['parameters'] ?? [];
                     $this->navOutput[$navKey] = array(
                         'route'=>$value['route'],
                         'parameters'=>$params,
-                        'active'=>($this->getCurrentRoute() == $value['route'] && $this->getCurrentParams() == $params),
-                        'icon'=>isset($value['icon']) ? $value['icon'] : $this->getDefaultIcon()
+                        'active'=>($this->getCurrentRoute() === $value['route'] && $this->getCurrentParams() === $params),
+                        'icon'=> $value['icon'] ?? $this->defaultIcon
                     );
                 }elseif(is_array($value)){
                     // level 2
                     foreach ($value as $subKey=>$subVal){
-                        if (isset($subVal['route']) && isset($subVal['role']) && $this->authChecker->isGranted($subVal['role'])){
-                            $params = isset($subVal['parameters']) ? $subVal['parameters'] : null;
+                        if (isset($subVal['route'], $subVal['role']) && $this->security->isGranted($subVal['role'])){
+                            $params = $subVal['parameters'] ?? [];
                             $this->navOutput[$navKey][$subKey] = array(
                                 'route'=>$subVal['route'],
                                 'parameters'=>$params,
-                                'active'=>($this->getCurrentRoute() == $subVal['route'] && $this->getCurrentParams() == $params),
-                                'icon'=>isset($subVal['icon']) ? $subVal['icon'] : $this->getDefaultIcon()
+                                'active'=>($this->getCurrentRoute() === $subVal['route'] && $this->getCurrentParams() === $params),
+                                'icon'=> $subVal['icon'] ?? $this->defaultIcon
                             );
                         }elseif(is_array($subVal)){
                             // level 3
                             foreach ($subVal as $subSubKey=>$subSubVal){
-                                if (isset($subSubVal['route']) && isset($subSubVal['role']) && $this->authChecker->isGranted($subSubVal['role'])){
-                                    $params = isset($subSubVal['parameters']) ? $subSubVal['parameters'] : null;
+                                if (isset($subSubVal['route'], $subSubVal['role']) && $this->security->isGranted($subSubVal['role'])){
+                                    $params = $subSubVal['parameters'] ?? [];
                                     $this->navOutput[$navKey][$subKey][$subSubKey] = array(
                                         'route'=>$subSubVal['route'],
                                         'parameters'=>$params,
-                                        'active'=>($this->getCurrentRoute() == $subSubVal['route'] && $this->getCurrentParams() == $params),
-                                        'icon'=>isset($subSubVal['icon']) ? $subSubVal['icon'] : $this->getDefaultIcon()
+                                        'active'=>($this->getCurrentRoute() === $subSubVal['route'] && $this->getCurrentParams() === $params),
+                                        'icon'=> $subSubVal['icon'] ?? $this->defaultIcon
                                     );
-                                    if ($this->getCurrentRoute() == $subSubVal['route'] && $this->getCurrentParams() == $params){
+                                    if ($this->getCurrentRoute() === $subSubVal['route'] && $this->getCurrentParams() === $params){
                                         $this->navOutput[$navKey][$subKey]['active'] = true;
                                         $this->navOutput[$navKey]['active'] = true;
                                     }
@@ -172,13 +124,12 @@ class NavModel
                     }
                 }
             }
-        }
 
         return $this;
     }
 
     /** @return array */
-    public function getNavOutput()
+    public function getNavOutput(): array
     {
         return $this->navOutput;
     }

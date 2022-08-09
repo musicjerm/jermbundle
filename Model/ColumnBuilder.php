@@ -2,19 +2,15 @@
 
 namespace Musicjerm\Bundle\JermBundle\Model;
 
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Security;
 
 class ColumnBuilder
 {
     /** @var array */
     private $config;
 
-    /** @var AuthorizationChecker */
-    private $authChecker;
-
-    /** @var UrlGeneratorInterface */
-    private $router;
+    /** @var Security */
+    private $security;
 
     /** @var array */
     private $colOrder;
@@ -52,14 +48,12 @@ class ColumnBuilder
     /**
      * ColumnBuilder constructor.
      * @param array $config
-     * @param AuthorizationChecker $authChecker
-     * @param UrlGeneratorInterface $router
+     * @param Security $security
      */
-    public function __construct($config, AuthorizationChecker $authChecker, $router)
+    public function __construct(array $config, Security $security)
     {
         $this->config = $config;
-        $this->authChecker = $authChecker;
-        $this->router = $router;
+        $this->security = $security;
     }
 
     /**
@@ -158,7 +152,7 @@ class ColumnBuilder
         $this->actionBtns = array();
         if (isset($this->config['actions']['item'])){
             foreach ($this->config['actions']['item'] as $key=>$actionItem){
-                if ($this->authChecker->isGranted($actionItem['role']) && isset($this->key)){
+                if ($this->security->isGranted($actionItem['role']) && isset($this->key)){
                     isset($actionItem['method']) ?: $actionItem['method'] = 'data-href';
                     isset($actionItem['path']) ?: $actionItem['path'] = $key;
                     isset($actionItem['params']) ?: $actionItem['params'] = [];
@@ -207,7 +201,7 @@ class ColumnBuilder
         $this->groupBtnCount = 0;
         if (isset($this->config['actions']['group'])){
             foreach ($this->config['actions']['group'] as $action){
-                if ($this->authChecker->isGranted($action['role'])){
+                if ($this->security->isGranted($action['role'])){
                     $this->groupBtnCount++;
                 }
             }

@@ -5,6 +5,7 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 use App\Entity\User;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Form\DtConfigType;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Entity\DtConfig;
@@ -20,9 +21,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,13 +61,14 @@ class BaseController extends AbstractController
     private $user;
 
     /**
+     * @param ManagerRegistry $mr
      * @param $configName
      * @param $user
      * @param bool $reset
      * @param int $columnPreset
      * @throws \Exception
      */
-    private function setYamlConfig($configName, $user, $reset = false, $columnPreset = -1)
+    private function setYamlConfig(ManagerRegistry $mr, $configName, $user, $reset = false, $columnPreset = -1)
     {
         $configDirs = array(
             $this->getParameter('kernel.project_dir') . '/src/JBConfig/Entity',
@@ -101,7 +102,7 @@ class BaseController extends AbstractController
         if (!isset($this->yamlConfig['entity'])){
             throw new \Exception("Entity name not set in config.", 500);
         }else{
-            $this->entityRepository = $this->getDoctrine()->getRepository($this->yamlConfig['entity']);
+            $this->entityRepository = $mr->getRepository($this->yamlConfig['entity']);
         }
 
         // check for page name
@@ -124,7 +125,7 @@ class BaseController extends AbstractController
         $this->filterType = "App\Form\JBFilter\\".ucfirst($normalizer->denormalize($configName)).'Type';
 
         // if primary config exists, set as loaded config
-        $em = $this->getDoctrine()->getManager();
+        $em = $mr->getManager();
         $dtConfigRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtConfig');
 
         // scan column presets and remove any with invalid column count
@@ -172,7 +173,7 @@ class BaseController extends AbstractController
         }
     }
 
-    private function createFiltersForm($entity, $user, $columnPreset = -1)
+    private function createFiltersForm(ManagerRegistry $mr, $entity, $user, $columnPreset = -1)
     {
         $this->user = $user;
 
@@ -223,7 +224,7 @@ class BaseController extends AbstractController
                     break;
                 case 'Choice':
                     if (isset($filter['entity_group']) && $filter['entity_group'] == true){
-                        $er = $this->getDoctrine()->getRepository($filter['entity_class']);
+                        $er = $mr->getRepository($filter['entity_class']);
                         $query = $filter['entity_query'];
                         if (isset($filter['restrict_location']) && $filter['restrict_location'] == true){
                             foreach ($er->$query($this->user->getLocation()) as $val){
@@ -254,6 +255,7 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param UserInterface $user
      * @param $entity
      * @param integer $column_preset
@@ -261,7 +263,7 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function indexAction(UserInterface $user = null, $entity, $column_preset, $filter_preset)
+    public function indexAction(ManagerRegistry $mr, UserInterface $user = null, $entity, $column_preset, $filter_preset)
     {
         // redirect to login if user accidentally signed out
         if (\in_array($entity, ["{{ path('login') }}", "{{ path('Login_route') }}"])){
@@ -269,7 +271,7 @@ class BaseController extends AbstractController
         }
 
         // configure defaults
-        $this->setYamlConfig($entity, $user, false, $column_preset);
+        $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
 
         if (isset($this->yamlConfig['restrict_location']) && $this->yamlConfig['restrict_location'] && $user->getLocation() === null){
             return $this->redirectToRoute('homepage');
@@ -291,7 +293,7 @@ class BaseController extends AbstractController
          * set active filter preset
          * @var DtFilter $primaryFilter
          */
-        $dtFilterRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
+        $dtFilterRepo = $mr->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
         if ($filter_preset >= 0){
             $primaryFilter = $dtFilterRepo->find($filter_preset);
             if ($primaryFilter && $primaryFilter->getEntity() !== $entity){
@@ -309,7 +311,7 @@ class BaseController extends AbstractController
                 'filter_preset' => $primaryFilter
             ));
         }elseif(isset($this->yamlConfig['filters'])){
-            $filtersForm = $this->createFiltersForm($entity, $user, $column_preset);
+            $filtersForm = $this->createFiltersForm($mr, $entity, $user, $column_preset);
         }else{
             $filtersForm = $this->createForm(BlankFilterType::class, null, array(
                 'action' => $this->generateUrl('jerm_bundle_data_get_csv', ['entity' => $entity, 'columnPreset' => $column_preset]),
@@ -348,7 +350,7 @@ class BaseController extends AbstractController
                 // if field type is entity and data set, query for entity
                 if ($child->getConfig()->getType()->getBlockPrefix() === 'entity' && $presetData[$child->getName()]){
                     // get repo and set entity
-                    $classRepo = $this->getDoctrine()->getRepository($child->getConfig()->getOption('class'));
+                    $classRepo = $mr->getRepository($child->getConfig()->getOption('class'));
                     $child->setData($classRepo->find($presetData[$child->getName()]));
                 }else{
                     // set data
@@ -386,24 +388,19 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param UserInterface $user
      * @param $entity
      * @param int $column_preset
      * @return JsonResponse
      * @throws \Exception
      */
-    public function dataColumnsAction(UserInterface $user, $entity, $column_preset = -1)
+    public function dataColumnsAction(ManagerRegistry $mr, UserInterface $user, $entity, $column_preset = -1)
     {
-        $this->setYamlConfig($entity, $user, false, $column_preset);
+        $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
+        $security = new Security($this->container);
 
-        /**
-         * @var AuthorizationChecker $authChecker
-         * @var UrlGeneratorInterface $router
-         */
-        $authChecker = $this->get('security.authorization_checker');
-        $router = $this->get('router');
-
-        $columnBuilder = new ColumnBuilder($this->yamlConfig, $authChecker, $router);
+        $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
 
         return new JsonResponse(array(
@@ -418,6 +415,7 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param Request $request
      * @param UserInterface $user
      * @param $entity
@@ -425,18 +423,12 @@ class BaseController extends AbstractController
      * @return JsonResponse
      * @throws \Exception
      */
-    public function dataQueryAction(Request $request, UserInterface $user, $entity, $column_preset = -1)
+    public function dataQueryAction(ManagerRegistry $mr, Request $request, UserInterface $user, $entity, $column_preset = -1)
     {
-        $this->setYamlConfig($entity, $user, false, $column_preset);
+        $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
+        $security = new Security($this->container);
 
-        /**
-         * @var AuthorizationChecker $authChecker
-         * @var UrlGeneratorInterface $router
-         */
-        $authChecker = $this->get('security.authorization_checker');
-        $router = $this->get('router');
-
-        $columnBuilder = new ColumnBuilder($this->yamlConfig, $authChecker, $router);
+        $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
 
         // check for filters - create form and get submitted data
@@ -447,7 +439,7 @@ class BaseController extends AbstractController
                 $filterData = $filtersForm->getData();
             }
         }elseif(isset($this->yamlConfig['filters'])){
-            $filtersForm = $this->createFiltersForm($entity, $user);
+            $filtersForm = $this->createFiltersForm($mr, $entity, $user);
             $filtersForm->handleRequest($request);
             if ($filtersForm->isSubmitted() && $filtersForm->isValid()){
                 $filterData = $filtersForm->getData();
@@ -464,7 +456,7 @@ class BaseController extends AbstractController
 
         // set user's length setting
         if (method_exists($user, 'getSettingRpp') && method_exists($user, 'setSettingRpp') && $user->getSettingRpp() !== (int) $maxResults){
-            $em = $this->getDoctrine()->getManager();
+            $em = $mr->getManager();
             $user->setSettingRpp((int) $maxResults);
             $em->flush();
         }
@@ -553,6 +545,7 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param UserInterface $user
      * @param Request $request
      * @param $entity
@@ -561,25 +554,19 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function getCsvAction(UserInterface $user, Request $request, $entity, $column_preset = -1, $filter_preset = -1)
+    public function getCsvAction(ManagerRegistry $mr, UserInterface $user, Request $request, $entity, $column_preset = -1, $filter_preset = -1)
     {
-        $this->setYamlConfig($entity, $user, false, $column_preset);
+        $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
+        $security = new Security($this->container);
 
-        /**
-         * @var AuthorizationChecker $authChecker
-         * @var UrlGeneratorInterface $router
-         */
-        $authChecker = $this->get('security.authorization_checker');
-        $router = $this->get('router');
-
-        $columnBuilder = new ColumnBuilder($this->yamlConfig, $authChecker, $router);
+        $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
 
         // check for filters - create form and get submitted data
         if (class_exists($this->filterType)){
             $filtersForm = $this->createForm("$this->filterType");
         }elseif(isset($this->yamlConfig['filters'])){
-            $filtersForm = $this->createFiltersForm($entity, $user);
+            $filtersForm = $this->createFiltersForm($mr, $entity, $user);
         }else{
             $filtersForm = $this->createForm(BlankFilterType::class, null, array(
                 'action' => $this->generateUrl('jerm_bundle_data_get_csv', ['entity' => $entity, 'columnPreset' => $column_preset])
@@ -599,7 +586,7 @@ class BaseController extends AbstractController
                  * populate filters if requested in api route
                  * @var DtFilter $selectedFilter
                  */
-                $dtFilterRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
+                $dtFilterRepo = $mr->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
                 $selectedFilter = $dtFilterRepo->find($filter_preset);
                 if ($selectedFilter && $selectedFilter->getEntity() === $entity){
                     $dataString = $selectedFilter->getData();
@@ -689,6 +676,7 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param Request $request
      * @param UserInterface|User $user
      * @param $entity
@@ -696,15 +684,15 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function dataConfigCreateAction(Request $request, UserInterface $user, $entity, $id = -1)
+    public function dataConfigCreateAction(ManagerRegistry $mr, Request $request, UserInterface $user, $entity, $id = -1)
     {
         if ($id >= 0){
-            $this->setYamlConfig($entity, $user, false, $id);
+            $this->setYamlConfig($mr, $entity, $user, false, $id);
         }else{
-            $this->setYamlConfig($entity, $user, true);
+            $this->setYamlConfig($mr, $entity, $user, true);
         }
 
-        $em = $this->getDoctrine()->getManager();
+        $em = $mr->getManager();
 
         $workingConfig = new DtConfig();
         $workingConfig
@@ -773,6 +761,7 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param Request $request
      * @param UserInterface $user
      * @param $entity
@@ -780,12 +769,12 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function dataConfigUpdateAction(Request $request, UserInterface $user, $entity, $id)
+    public function dataConfigUpdateAction(ManagerRegistry $mr, Request $request, UserInterface $user, $entity, $id)
     {
         $configName = $entity;
-        $this->setYamlConfig($configName, $user);
+        $this->setYamlConfig($mr, $configName, $user);
 
-        $em = $this->getDoctrine()->getManager();
+        $em = $mr->getManager();
         /**
          * @var DtConfig $workingConfig
          */
@@ -852,14 +841,15 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param UserInterface $user
      * @param $id
      * @return Response
      * @throws \Exception
      */
-    public function dataConfigDeleteAction(UserInterface $user, $id)
+    public function dataConfigDeleteAction(ManagerRegistry $mr, UserInterface $user, $id): Response
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $mr->getManager();
         /**
          * @var DtConfig $dtConfig
          */
@@ -882,34 +872,29 @@ class BaseController extends AbstractController
 
     /**
      * @param Request $request
-     * @param UserInterface|null $user
      * @return Response
      * @throws \Exception
      */
-    public function navAction(Request $request, UserInterface $user = null)
+    public function navAction(Request $request): Response
     {
         $configDir = $this->getParameter('kernel.project_dir') . '/src/JBConfig';
 
-        /** @var FileLocator $fileLocator */
         $fileLocator = new FileLocator([$configDir]);
         $configFile = $fileLocator->locate('nav.yaml');
 
         $yamlNav = Yaml::parse(file_get_contents($configFile));
 
         $params = $request->get('current_params');
-        if ($request->get('current_route') == 'jerm_bundle_data_index'){
-            unset($params['filter_preset']);
-            unset($params['column_preset']);
+        if ($request->get('current_route') === 'jerm_bundle_data_index'){
+            unset($params['filter_preset'], $params['column_preset']);
         }
 
-        /** @var \Symfony\Component\Security\Core\Authorization\AuthorizationChecker $authChecker */
-        $authChecker = $this->get('security.authorization_checker');
-        $navModel = new NavModel($authChecker);
+        $security = new Security($this->container);
+        $navModel = new NavModel($security);
         $navModel
             ->setNavData($yamlNav)
             ->setCurrentRoute($request->get('current_route'))
-            ->setCurrentParams($params)
-            ->setUserRoles($user ? $user->getRoles() : null);
+            ->setCurrentParams($params);
 
         $navModel->buildNav();
 
@@ -923,15 +908,16 @@ class BaseController extends AbstractController
     }
 
     /**
+     * @param ManagerRegistry $mr
      * @param UserInterface|null $user
      * @return Response
      */
-    public function messageAction(UserInterface $user = null)
+    public function messageAction(ManagerRegistry $mr, UserInterface $user = null)
     {
         /**
          * @var NotificationRepository $notificationRepo
          */
-        $notificationRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
+        $notificationRepo = $mr->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
         $messages = $notificationRepo->getLatest($user);
         $unreadCount = (int) $notificationRepo->countUnread($user)[0][1];
 
