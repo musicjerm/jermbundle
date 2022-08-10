@@ -505,7 +505,7 @@ class BaseController extends AbstractController
                                     }
                                 }
                             }
-                            $tempArray[$object[0]][$object[1]][$object[2]][$object[3]] = isset($objectValue) ? htmlspecialchars($objectValue) : null;
+                            $tempArray[$object[0]][$object[1]][$object[2]][$object[3]] = isset($objectValue) ? htmlspecialchars($objectValue?? '') : null;
                             break;
                         case 3:
                             if ($item->$getter() && method_exists($item->$getter(), $getter1 = 'get'.ucfirst($object[1]))){
@@ -513,18 +513,18 @@ class BaseController extends AbstractController
                                     $objectValue = $item->$getter()->$getter1()->$getter2();
                                 }
                             }
-                            $tempArray[$object[0]][$object[1]][$object[2]] = isset($objectValue) ? htmlspecialchars($objectValue) : null;
+                            $tempArray[$object[0]][$object[1]][$object[2]] = isset($objectValue) ? htmlspecialchars($objectValue ?? '') : null;
                             break;
                         case 2:
                             if ($item->$getter() && method_exists($item->$getter(), $getter1 = 'get'.ucfirst($object[1]))){
                                 $objectValue = $item->$getter()->$getter1();
                             }
-                            $tempArray[$object[0]][$object[1]] = isset($objectValue) ? htmlspecialchars($objectValue) : null;
+                            $tempArray[$object[0]][$object[1]] = isset($objectValue) ? htmlspecialchars($objectValue ?? '') : null;
                             break;
                     }
 
                 }elseif(method_exists($item, $getter = 'get'.ucfirst($col['data']))){
-                    $tempArray[$col['data']] = is_object($item->$getter()) ? htmlspecialchars($item->$getter()->__toString()) : htmlspecialchars($item->$getter());
+                    $tempArray[$col['data']] = is_object($item->$getter()) ? htmlspecialchars($item->$getter()->__toString() ?? '') : htmlspecialchars($item->$getter() ?? '');
                 }else{
                     $tempArray[$col['data']] = null;
                 }

@@ -117,9 +117,4 @@ class User implements UserInterface, \Serializable
         //handled by BCRYPT
         return null;
     }
-
-    public function getUserIdentifier(): string
-    {
-        return $this->email;
-    }
 }
