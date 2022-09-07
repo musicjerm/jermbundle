@@ -6,23 +6,12 @@ use Symfony\Component\Process\Process;
 
 class AppUpdater
 {
-    /** @var string */
-    private $projectDir;
-
-    /** @var string */
-    private $gitUser;
-
-    /** @var string */
-    private $gitPass;
-
-    /** @var string */
-    private $gitRepo;
-
-    /** @var integer */
-    public $commitsAvailable;
-
-    /** @var string */
-    public $message;
+    private string $projectDir;
+    private ?string $gitUser;
+    private ?string $gitPass;
+    private ?string $gitRepo;
+    public int $commitsAvailable = 0;
+    public ?string $message = null;
 
     public function __construct(string $projectDir, ?string $gitUser, ?string $gitPass, ?string $gitRepo)
     {
@@ -37,7 +26,7 @@ class AppUpdater
         // ensure user and pass set in git config file
 
         // create and run new process
-        $process = new Process('cd ' . $this->projectDir . '; git fetch');
+        $process = Process::fromShellCommandline("git -C $this->projectDir fetch");
         $process->run();
 
         // check if process worked
@@ -45,15 +34,13 @@ class AppUpdater
             return true;
         }
 
-        // set error message and return false
-        $this->message = 'Unable to fetch remote branch.  ' . $process->getErrorOutput();
         return false;
     }
 
     public function checkUpdates(): bool
     {
         // create and run new process
-        $process = new Process('cd ' . $this->projectDir . '; git rev-list --count origin/master...master');
+        $process = Process::fromShellCommandline("git -C $this->projectDir rev-list --count origin/master...master");
         $process->run();
 
         // check if process worked
@@ -76,8 +63,7 @@ class AppUpdater
     public function getConfig(): array
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . '; git config --list';
-        $process = new Process($processString);
+        $process = Process::fromShellCommandline("git -C $this->projectDir config --list");
         $process->run();
 
         // set options array
@@ -99,8 +85,7 @@ class AppUpdater
     public function setGitOption(string $option, $value): void
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . "; git config $option $value";
-        $process = new Process($processString);
+        $process = Process::fromShellCommandline("git -C $this->projectDir config $option $value");
         $process->run();
 
         // check if process worked, set output message
@@ -114,8 +99,7 @@ class AppUpdater
     public function pullUpdates(): bool
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . "; git pull https://$this->gitUser:$this->gitPass@$this->gitRepo";
-        $process = new Process($processString);
+        $process = Process::fromShellCommandline("git -C $this->projectDir pull https://$this->gitUser:$this->gitPass@$this->gitRepo");
         $process->run();
 
         // check if process worked, set output message
@@ -132,8 +116,7 @@ class AppUpdater
     public function composerUpdate(string $method): bool
     {
         // create and run new process
-        $processString = "php /usr/local/bin/composer $method -d $this->projectDir";
-        $process = new Process($processString);
+        $process = Process::fromShellCommandline("php /usr/local/bin/composer $method -d $this->projectDir");
         $process->run();
 
         // check if process worked, set output message
@@ -150,8 +133,7 @@ class AppUpdater
     public function doctrineUpdate(string $method): bool
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . '; php bin/console doctrine:schema:update ' . $method;
-        $process = new Process($processString);
+        $process = Process::fromShellCommandline("php $this->projectDir/bin/console doctrine:schema:update $method");
         $process->run();
 
         // check if process worked, set output message
@@ -168,8 +150,7 @@ class AppUpdater
     public function clearCache(): bool
     {
         // create and run new process
-        $processString = 'cd ' . $this->projectDir . '; php bin/console cache:clear && php bin/console cache:warm';
-        $process = new Process($processString);
+        $process = Process::fromShellCommandline("php $this->projectDir/bin/console cache:clear");
         $process->run();
 
         // check if process worked, set output message

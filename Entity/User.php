@@ -6,20 +6,15 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface, \Serializable
 {
-    /** @var int */
-    protected $id;
+    protected ?int $id;
 
-    /** @var string */
-    protected $username;
+    protected string $username;
 
-    /** @var string */
-    protected $password;
+    protected string $password;
 
-    /** @var string */
-    protected $email;
+    protected string $email;
 
-    /** @var array */
-    protected $roles;
+    protected array $roles;
 
     public function __construct()
     {
