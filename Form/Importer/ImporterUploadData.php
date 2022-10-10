@@ -11,10 +11,10 @@ class ImporterUploadData
      * @var UploadedFile
      * @Assert\NotBlank()
      * @Assert\File(
-     *     mimeTypes={"text/csv"},
+     *     mimeTypes={"text/csv","text/plain"},
      *     mimeTypesMessage="Please select a valid CSV file",
      *     maxSize="100M"
      * )
      */
-    public $file;
+    public UploadedFile $file;
 }
