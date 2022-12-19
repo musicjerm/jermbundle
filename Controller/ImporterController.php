@@ -4,13 +4,11 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
-use Musicjerm\Bundle\JermBundle\Events\ImporterImportEvent;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Model\ImporterStructureModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -97,14 +95,13 @@ class ImporterController extends AbstractController
 
     /**
      * @param Connection $connection
-     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function fastImport(Connection $connection, EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
+    public function fastImport(Connection $connection, Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -348,14 +345,14 @@ class ImporterController extends AbstractController
                 $message = $this->yamlConfig['entity_name'];
                 $message .= " Import completed in ($totalTimeString).  ($newCount) new, ($updateCount) updated.";
 
-                // dispatch event for logging
-                $event = new ImporterImportEvent(array(
-                    'class' => $this->yamlConfig['entity_name'],
-                    'new' => $newCount,
-                    'updated' => $updateCount
-                ));
-
-                $dispatcher->dispatch($event);
+                // send to logging controller
+                if (class_exists('App\Controller\LoggingController')){
+                    $this->forward('App\Controller\LoggingController::importerLogging', array(
+                        'class' => $this->yamlConfig['entity_name'],
+                        'newCount' => $newCount,
+                        'updatedCount' => $updateCount
+                    ));
+                }
 
                 // return success message to user
                 return $this->render('@JermBundle/Modal/notification.html.twig', array(

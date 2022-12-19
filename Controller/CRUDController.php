@@ -2,11 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
-use Musicjerm\Bundle\JermBundle\Events\CrudCreateEvent;
-use Musicjerm\Bundle\JermBundle\Events\CrudUpdateEvent;
-use Musicjerm\Bundle\JermBundle\Events\CrudDeleteEvent;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -121,14 +117,13 @@ class CRUDController extends AbstractController
     }
 
     /**
-     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function createAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
+    public function createAction(Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -226,9 +221,13 @@ class CRUDController extends AbstractController
             }
         }
 
-        // dispatch event for logging, etc
-        $event = new CrudCreateEvent($workingObject);
-        $dispatcher->dispatch($event);
+        // send to logging controller
+        if (class_exists('App\Controller\LoggingController')){
+            $this->forward('App\Controller\LoggingController::crudLogging', array(
+                'object' => $workingObject,
+                'crudMethod' => 'create'
+            ));
+        }
 
         // if next_path is defined, flash new object id, redirect
         if ($form->has('next_path') && method_exists($workingObject, 'getId') && $form->get('next_path')->getData() !== null){
@@ -247,7 +246,6 @@ class CRUDController extends AbstractController
     }
 
     /**
-     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
@@ -255,7 +253,7 @@ class CRUDController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function updateAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity, $id): Response
+    public function updateAction(Request $request, UserInterface $user, $entity, $id): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -354,9 +352,13 @@ class CRUDController extends AbstractController
         // flush database
         $em->flush();
 
-        // dispatch event for logging, etc
-        $event = new CrudUpdateEvent($workingObject);
-        $dispatcher->dispatch($event);
+        // send to logging controller
+        if (class_exists('App\Controller\LoggingController')){
+            $this->forward('App\Controller\LoggingController::crudLogging', array(
+                'object' => $workingObject,
+                'crudMethod' => 'update'
+            ));
+        }
 
         // if next_path is defined, flash new object id, redirect
         if ($form->has('next_path') && method_exists($workingObject, 'getId') && $form->get('next_path')->getData() !== null){
@@ -375,14 +377,13 @@ class CRUDController extends AbstractController
     }
 
     /**
-     * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface $user
      * @param string $entity
      * @return Response
      * @throws \Exception
      */
-    public function deleteAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
+    public function deleteAction(Request $request, UserInterface $user, $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -512,12 +513,13 @@ class CRUDController extends AbstractController
 
         $em->flush();
 
-        // dispatch event for logging, etc
-        $event = new CrudDeleteEvent(array(
-            'class' => $this->yamlConfig['entity_name'],
-            'deleted' => $objectStrings
-        ));
-        $dispatcher->dispatch($event);
+        // send to logging controller
+        if (class_exists('App\Controller\LoggingController')){
+            $this->forward('App\Controller\LoggingController::crudDeleteLogging', array(
+                'class' => $this->yamlConfig['entity_name'],
+                'deleted' => $objectStrings
+            ));
+        }
 
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
