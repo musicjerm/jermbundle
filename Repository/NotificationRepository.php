@@ -10,14 +10,25 @@ class NotificationRepository extends EntityRepository
     public function standardQuery($orderBy, $orderDir, $firstResult, $maxResults, $filters, $user): Query
     {
         $qb = $this->createQueryBuilder('n')
-            ->where('n.user = ?0')
-            ->setParameter(0, $user)
+            ->where('n.user = :user')
+            ->setParameter('user', $user)
             ->orderBy($orderBy, $orderDir)
             ->setFirstResult($firstResult)
             ->setMaxResults($maxResults);
 
+        if ($filters['Search'] !== null){
+            $whereArray = array();
+            foreach (explode(' ', $filters['Search']) as $key => $val){
+                $whereArray[$key] = "(n.subject LIKE ?$key OR n.message LIKE ?$key)";
+                $qb->setParameter($key, "%$val%");
+            }
+
+            $qb->andWhere(implode(' AND ', $whereArray));
+        }
+
         if ($filters['status'] !== null){
-            $qb->andWhere('n.unread = ?1')->setParameter(1, $filters['status']);
+            $qb->andWhere('n.unread = :status')
+                ->setParameter('status', $filters['status']);
         }
 
         return $qb->getQuery();

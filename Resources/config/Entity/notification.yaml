@@ -14,9 +14,12 @@ view: [1, 4]
 tooltip: [-1, 2, -1, -1, -1]
 sortDir: 'desc'
 
-#template: 'AppBundle:DataIndex:notification.html.twig'
+template: '@JermBundle/DataIndex/notification.html.twig'
 
 filters:
+    -
+        name: 'Search'
+        type: 'Text'
     -
         name: 'status'
         type: 'Choice'
@@ -28,9 +31,9 @@ actions:
     item:
         jerm_bundle_notification_view: {role: 'ROLE_USER', icon: 'fa-eye', text: 'View'}
     group:
-        #jerm_bundle_crud_delete:
-        #    role: 'ROLE_USER'
-        #    text: 'Delete Selected'
-        #    restrict_owner: true
-        #    params: { entity: 'notification' }
+        jerm_bundle_crud_delete:
+            role: 'ROLE_USER'
+            text: 'Delete Selected'
+            restrict_owner: true
+            params: { entity: 'notification' }
         jerm_bundle_notification_mark_read: {role: 'ROLE_USER', text: 'Mark Read'}
