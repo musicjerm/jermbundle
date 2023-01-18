@@ -64,9 +64,19 @@
                         {% endif %}
                     {% endfor %}
                 {% endif %}
-                <a id="data_get_csv" class="btn btn-sm btn-flat btn-default">
-                    <i class="fa fa-download"></i> Get CSV
-                </a>
+                <div class="btn-group">
+                    <button type="button" id="data_get_csv" class="btn btn-sm btn-flat btn-default">
+                        <i class="fa fa-download"></i> Get CSV
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default btn-flat dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a id="data_get_excel" href="#">Export to Excel</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 

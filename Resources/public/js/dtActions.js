@@ -10,6 +10,7 @@ $(document).ready(function(){
     var activeFilterPreset = renderScript.attr('data-filter-preset');
     var filtersForm = $('#standard_data_filters_form');
     var getCSVbtn = $('#data_get_csv');
+    var getExcelBtn = $('#data_get_excel');
     var columnPresetSelectors = $('.column_preset_selector');
     var deletePresetBtn = $('.delete_preset_btn');
     var newFilterBtn = $('#new_filter_btn');
@@ -42,7 +43,7 @@ $(document).ready(function(){
 
     //prevent filters form from submitting on enter key press
     filtersForm.on('keydown', function(event){
-        if (event.keyCode == 13){
+        if (event.keyCode === 13){
             event.preventDefault();
             return false;
         }
@@ -50,6 +51,15 @@ $(document).ready(function(){
 
     //download csv of current filtered data
     getCSVbtn.on('click', function(){
+        filtersForm.submit();
+    });
+
+    // download excel of current filtered data
+    getExcelBtn.on('click', function(){
+        let filters_form_action = filtersForm.attr('action');
+        let new_filters_form_action = filters_form_action.replace('csv', 'excel');
+        filtersForm.attr('action', new_filters_form_action);
+
         filtersForm.submit();
     });
 

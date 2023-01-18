@@ -50,6 +50,13 @@ jerm_bundle_data_get_csv:
         column_preset: -1
         filter_preset: -1
 
+jerm_bundle_data_get_excel:
+    path: /data/get_excel/{entity}/{column_preset}/{filter_preset}
+    controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::getExcelAction
+    defaults:
+        column_preset: -1
+        filter_preset: -1
+
 jerm_bundle_api_data_get_csv:
     path: /api/get_csv/{entity}/{column_preset}/{filter_preset}
     controller: Musicjerm\Bundle\JermBundle\Controller\BaseController::getCsvAction

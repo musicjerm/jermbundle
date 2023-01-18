@@ -3,6 +3,7 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use App\Entity\User;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,13 +15,16 @@ use Musicjerm\Bundle\JermBundle\Form\BlankFilterType;
 use Musicjerm\Bundle\JermBundle\Form\ColumnPresetType;
 use Musicjerm\Bundle\JermBundle\Form\FilterPresetType;
 use Musicjerm\Bundle\JermBundle\Model\ColumnBuilder;
+use Musicjerm\Bundle\JermBundle\Model\ExcelDownloader;
 use Musicjerm\Bundle\JermBundle\Model\NavModel;
 use Musicjerm\Bundle\JermBundle\Repository\NotificationRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -672,6 +676,177 @@ class BaseController extends AbstractController
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment; filename="'.$newFileName.'.csv"');
         $response->setContent($dataDump);
+        return $response;
+    }
+
+    /**
+     * @param Connection $connection
+     * @param ManagerRegistry $mr
+     * @param UserInterface $user
+     * @param Request $request
+     * @param string $entity
+     * @param int $column_preset
+     * @param int $filter_preset
+     * @return Response
+     * @throws \Exception
+     */
+    public function getExcelAction(Connection $connection, ManagerRegistry $mr, UserInterface $user, Request $request, string $entity, int $column_preset = -1, int $filter_preset = -1): Response
+    {
+        // allow some time and start timer
+        set_time_limit(0);
+        $timeStart = new \DateTime();
+
+        $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
+        $security = new Security($this->container);
+
+        $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
+        $columnBuilder->buildColumns();
+
+        // check for filters - create form and get submitted data
+        if (class_exists($this->filterType)){
+            $filtersForm = $this->createForm("$this->filterType");
+        }elseif(isset($this->yamlConfig['filters'])){
+            $filtersForm = $this->createFiltersForm($mr, $entity, $user);
+        }else{
+            $filtersForm = $this->createForm(BlankFilterType::class, null, array(
+                'action' => $this->generateUrl('jerm_bundle_data_get_csv', ['entity' => $entity, 'columnPreset' => $column_preset])
+            ));
+        }
+
+        // process form data
+        $filtersForm->handleRequest($request);
+        if ($filtersForm->isSubmitted() && $filtersForm->isValid()){
+            $filterData = $filtersForm->getData();
+
+        }else{
+            // check for preset data or set null
+            $presetData = array();
+            if ($filter_preset >= 0){
+                /**
+                 * populate filters if requested in api route
+                 * @var DtFilter $selectedFilter
+                 */
+                $dtFilterRepo = $mr->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
+                $selectedFilter = $dtFilterRepo->find($filter_preset);
+                if ($selectedFilter && $selectedFilter->getEntity() === $entity){
+                    $dataString = $selectedFilter->getData();
+                    parse_str($dataString, $presetData);
+                }
+            }
+
+            $filterData = array();
+            foreach ($filtersForm->all() as $child){
+                if (array_key_exists($child->getName(), $presetData)){
+                    $filterData[$child->getName()] = $presetData[$child->getName()];
+                }else{
+                    $filterData[$child->getName()] = null;
+                }
+            }
+        }
+
+        // set query parameters
+        $orderBy = $columnBuilder->getColumns()[$columnBuilder->getSortId()]['sort'];
+        $orderDir = $columnBuilder->getSortDir();
+        $firstResult = null;
+        $maxResults = null;
+        isset($filterData) ?: $filterData = null;
+
+        // check for entity query method
+        if (array_key_exists('query', $this->yamlConfig) && $this->yamlConfig['query'] !== null){
+            $queryMethod = $this->yamlConfig['query'];
+        }else{
+            $queryMethod = 'standardQuery';
+        }
+        if (!method_exists($this->entityRepository, $queryMethod)){
+            throw new \Exception("$queryMethod has not been implemented in your " . $this->yamlConfig['entity'] . ' repository class.');
+        }
+
+        /** @var Query $query */
+        $query = $this->entityRepository->$queryMethod($orderBy, $orderDir, $firstResult, $maxResults, $filterData, $user);
+
+        // parse data and put "dumpable" columns into array for csv output
+        $data = array();
+        foreach ($query->getResult() as $item){
+            $tempArray = array();
+            foreach ($columnBuilder->getColumns() as $col){
+                if($col['dumpable'] && count($object = explode('.', $col['data'])) > 1 && method_exists($item, $getter = 'get'.ucfirst($object[0]))){
+                    if (count($object) > 2 && $item->$getter() !== null && method_exists($item->$getter(), $getter1 = 'get'.ucfirst($object[1]))){
+                        if (count($object) > 3 && method_exists($item->$getter()->$getter1(), $getter2 = 'get'.ucfirst($object[2]))){
+                            $getter3 = 'get'.ucfirst($object[3]);
+                            $tempArray[] = $item->$getter() && $item->$getter()->$getter1() && $item->$getter()->$getter1()->$getter2() ? $item->$getter()->$getter1()->$getter2()->$getter3() : null;
+                        }else{
+                            $getter2 = 'get'.ucfirst($object[2]);
+                            $tempArray[] = $item->$getter() && $item->$getter()->$getter1() ? $item->$getter()->$getter1()->$getter2() : null;
+                        }
+                    }else{
+                        $getter1 = 'get'.ucfirst($object[1]);
+                        $tempArray[] = $item->$getter() ? $item->$getter()->$getter1() : null;
+                    }
+                }elseif ($col['dumpable'] && method_exists($item, $getter = 'get'.ucfirst($col['data']))){
+                    $tempArray[] = $item->$getter();
+                }elseif($col['dumpable']){
+                    $tempArray[] = null;
+                }
+            }
+            $data[] = $tempArray;
+        }
+
+        // set column names
+        $columnNames = array();
+        foreach ($columnBuilder->getColumns() as $col){
+            if (isset($col['dumpable']) && $col['dumpable']){
+                $columnNames[] = $col['title'];
+            }
+        }
+
+        // merge headers with data
+        $allData = array_merge([$columnNames], $data);
+
+        // build excel sheet
+        $excelFile = new ExcelDownloader();
+        $excelFile->setSheets([0 => $this->yamlConfig['page_name']]);
+        $excelFile->setSheetData(0, $allData);
+        $lastRow = count($allData);
+
+        // format special text data
+        $key = 0;
+        foreach ($columnBuilder->getColumns() as $col){
+            if (isset($col['dumpable'], $col['format']) && $col['dumpable']){
+                $colLetter = $excelFile->getColumnLetter($key);
+                for ($num = 2; $num <= $lastRow; $num++)
+                {
+                    // set explicit value type in the cell
+                    $excelFile->setExplicitTextValue(0, "$colLetter$num", $allData[$num - 1][$key - 1], $col['format']);
+                }
+                // set format for the column
+                $excelFile->setSheetRangeFormatText(0, $colLetter . "2:$colLetter" . $lastRow, $col['format']);
+            }
+            $key++;
+        }
+
+        $date = new \DateTime('now');
+        $newFileName = $this->getParameter('app_name').' '.ucwords(str_replace('_', ' ', $entity)).' Export '.$date->format('Y-m-d His');
+        $lastColumn = $excelFile->getColumnLetter(count($columnNames));
+        $excelFile->formatSheetHeaders(0, "A1:$lastColumn" . '1');
+        $excelFile->setSheetCursor(0);
+        $excelFile->setFile($this->getParameter('kernel.project_dir') . '/documents/temp/', $newFileName);
+        $excelFile->saveFile();
+
+        $response = new BinaryFileResponse($excelFile->getFile());
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+
+        $timeEnd = new \DateTime();
+        $totalTime = $timeEnd->getTimestamp() - $timeStart->getTimestamp();
+
+        // send to post processor if timeout may occur
+        if ($totalTime > -1 && class_exists('App\Controller\PostProcessingSchedulerController')){
+            // send to application processor to decide what to do with the file
+            $this->forward('App\Controller\PostProcessingSchedulerController::dumpToExcel', array(
+                'documentPath' => $this->getParameter('kernel.project_dir') . '/documents/temp/',
+                'filename' => $newFileName
+            ));
+        }
+
         return $response;
     }
 
