@@ -809,19 +809,23 @@ class BaseController extends AbstractController
         $lastRow = count($allData);
 
         // format special text data
-        $key = 0;
+        $dataKey = 0;
         foreach ($columnBuilder->getColumns() as $col){
             if (isset($col['dumpable'], $col['format']) && $col['dumpable']){
-                $colLetter = $excelFile->getColumnLetter($key);
-                for ($num = 2; $num <= $lastRow; $num++)
+                $colLetter = $excelFile->getColumnLetter($dataKey + 1);
+                for ($rowNum = 2; $rowNum <= $lastRow; $rowNum++)
                 {
                     // set explicit value type in the cell
-                    $excelFile->setExplicitTextValue(0, "$colLetter$num", $allData[$num - 1][$key - 1], $col['format']);
+                    $excelFile->setExplicitTextValue(0, "$colLetter$rowNum", $allData[$rowNum - 1][$dataKey], $col['format']);
                 }
                 // set format for the column
                 $excelFile->setSheetRangeFormatText(0, $colLetter . "2:$colLetter" . $lastRow, $col['format']);
             }
-            $key++;
+
+            // count key if dumpable
+            if (isset($col['dumpable']) && $col['dumpable']){
+                $dataKey++;
+            }
         }
 
         $date = new \DateTime('now');
