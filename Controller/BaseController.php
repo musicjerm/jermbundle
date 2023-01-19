@@ -804,7 +804,7 @@ class BaseController extends AbstractController
 
         // build excel sheet
         $excelFile = new ExcelDownloader();
-        $excelFile->setSheets([0 => $this->yamlConfig['page_name']]);
+        $excelFile->setSheets([0 => substr($this->yamlConfig['page_name'], 0, 31)]);
         $excelFile->setSheetData(0, $allData);
         $lastRow = count($allData);
 
