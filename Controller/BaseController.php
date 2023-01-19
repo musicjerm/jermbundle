@@ -839,7 +839,7 @@ class BaseController extends AbstractController
         $totalTime = $timeEnd->getTimestamp() - $timeStart->getTimestamp();
 
         // send to post processor if timeout may occur
-        if ($totalTime > -1 && class_exists('App\Controller\PostProcessingSchedulerController')){
+        if ($totalTime > 50 && class_exists('App\Controller\PostProcessingSchedulerController')){
             // send to application processor to decide what to do with the file
             $this->forward('App\Controller\PostProcessingSchedulerController::dumpToExcel', array(
                 'documentPath' => $this->getParameter('kernel.project_dir') . '/documents/temp/',
