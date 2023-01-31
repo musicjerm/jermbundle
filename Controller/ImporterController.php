@@ -10,6 +10,7 @@ use Musicjerm\Bundle\JermBundle\Message\FastImportMessage;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Model\ImporterStructureModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\Envelope;
@@ -262,6 +263,10 @@ class ImporterController extends AbstractController
                 ));
                 //todo: how to notify user of errors / status / completion?
             }
+
+            // remove uploaded file
+            $fs = new Filesystem();
+            $fs->remove($newFilename);
         }
 
         // display form to user
