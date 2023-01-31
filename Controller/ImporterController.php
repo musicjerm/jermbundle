@@ -6,12 +6,15 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
+use Musicjerm\Bundle\JermBundle\Message\FastImportMessage;
 use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Model\ImporterStructureModel;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Yaml\Yaml;
 
@@ -94,6 +97,7 @@ class ImporterController extends AbstractController
     }
 
     /**
+     * @param MessageBusInterface $bus
      * @param Connection $connection
      * @param Request $request
      * @param UserInterface $user
@@ -101,7 +105,7 @@ class ImporterController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function fastImport(Connection $connection, Request $request, UserInterface $user, $entity): Response
+    public function fastImport(MessageBusInterface $bus, Connection $connection, Request $request, UserInterface $user, string $entity): Response
     {
         // set yaml config
         $this->setYamlConfig($entity);
@@ -114,13 +118,10 @@ class ImporterController extends AbstractController
             ));
         }
 
-        // entity manager
-        $em = $this->getDoctrine()->getManager();
-
         /** @var $sm MySqlSchemaManager */
         $sm = $connection->createSchemaManager();
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
-        $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));// create array with new importer model for each column
+        $columnList = $sm->listTableColumns($nameConverter->normalize(lcfirst($this->yamlConfig['entity_name'])));
 
         // set column indexes
         $columnIndexes = array();
@@ -145,6 +146,7 @@ class ImporterController extends AbstractController
             );
         }
 
+        // create array with new importer model for each column
         /** @var ImporterStructureModel[] $structureArray */
         $structureArray = array();
         foreach ($this->importConfig['headers'] as $key => $ic){
@@ -153,7 +155,7 @@ class ImporterController extends AbstractController
             if (isset($columnFks[$ic])){
                 $structureArray[$ic]->type = 'Entity';
                 $structureArray[$ic]->foreignKey = $columnFks[$ic];
-                $structureArray[$ic]->repo = $em->getRepository('App\Entity\\'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table'])));
+                $structureArray[$ic]->repo = 'App\Entity\\'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table']));
             }else{
                 $structureArray[$ic]->type = $columnList[$nameConverter->normalize($ic)]->getType()->getName();
             }
@@ -183,185 +185,86 @@ class ImporterController extends AbstractController
         $headerErrors = false;
         $processingErrors = array();
         if ($uploadForm->isSubmitted() && $uploadForm->isValid()){
-            // capture start time, remove time limit
-            $startTime = new \DateTime();
-            set_time_limit(0);
-
-            // set batch size to keep memory usage down
-            $batchSize = $this->importConfig['batch_size'] ?? 1000;
-            $updateOnly = false;
-
-            // repo
-            $repo = $em->getRepository($this->yamlConfig['entity_class']);
-
-            // check for pre-process script, execute
-            if (method_exists($repo, 'preFastImport')){
-                $repo->preFastImport();
-            }
+            // move uploaded file from temp location
+            $newFileLocation = $this->getParameter('kernel.project_dir') . '/uploads/tmp/';
+            $uploadFormData->file->move($newFileLocation);
+            $newFilename = $newFileLocation . $uploadFormData->file->getFilename();
 
             // open file
-            $fileHandler = fopen($uploadFormData->file->getRealPath(), 'rb');
-
-            // loop lines
-            $i = 0;
-            $newCount = 0;
-            $updateCount = 0;
-            $queryKeys = array();
-            while (($row = fgetcsv($fileHandler, 0, ',')) !== false){
-                // check headers
-                if ($i === 0){
-                    // loop structure array, set positions
-                    foreach ($structureArray as $key => $columnHeader){
-                        $positionArray = array_keys($row, $columnHeader->name);
-
-                        // check for duplicate headers
-                        if (\count($positionArray) > 1){
-                            $columnHeader->error[] = 'Duplicate column headers';
-                            $headerErrors = true;
-                        }
-
-                        // check for primary header
-                        if ($columnHeader->primary === true && \count($positionArray) === 0){
-                            $columnHeader->error[] = 'Primary header missing';
-                            $headerErrors = true;
-                        }elseif ($columnHeader->primary === true){
-                            // set query keys
-                            $queryKeys[$key] = $positionArray[0];
-                        }
-
-                        // check for required, but non-primary header
-                        if ($columnHeader->primary === false && $columnHeader->required === true && \count($positionArray) === 0){
-                            $columnHeader->warning[] = 'Required header missing, update only enforced';
-                            $updateOnly = true;
-                        }
-
-                        // set position
-                        if (\count($positionArray) > 0){
-                            $columnHeader->position = $positionArray[0];
-                        }
-                    }
-
-                    // do not proceed if errors
-                    if ($headerErrors === true){break;}
-                }else{
-
-                    $queryArray = array();
-                    foreach ($queryKeys as $key => $value){
-                        $queryArray[$key] = $row[$value];
-                    }
-
-                    // query existing object
-                    if (method_exists($repo, 'fastImportQuery')){
-                        $workingObject = $repo->fastImportQuery($queryArray);
-                    }elseif(\count($queryArray) > 0){
-                        $workingObject = $repo->findOneBy($queryArray);
-                    }else{
-                        $workingObject = null;
-                    }
-
-                    // create new object
-                    if ($workingObject === null && $updateOnly === false){
-                        $workingObject = new $this->yamlConfig['entity_class']();
-                        $persist = true;
-                    }else{
-                        $persist = false;
-                    }
-
-                    // transform values
-                    if ($workingObject !== null){
-                        $transformer = new $this->importConfig['transformer'](
-                            $workingObject,
-                            $user,
-                            $row,
-                            $structureArray
-                        );
-
-                        method_exists($transformer, 'importerFastTransformer') ? $transformer->importerFastTransformer() : false;
-
-                        // persist, count
-                        if ($persist === true){
-                            try{
-                                $em->persist($workingObject);
-                                $newCount++;
-                            }catch(\Exception $e){
-                                $processingErrors[] = array(
-                                    'code' => $e->getCode(),
-                                    'message' => $e->getMessage()
-                                );
-                            }
-                        }else{
-                            $updateCount++;
-                        }
-                    }
-
-                    // save database changes if batch complete
-                    if (($i % $batchSize) === 0){
-                        try{
-                            $em->flush();
-                        }catch(\Exception $e){
-                            $processingErrors[] = array(
-                                'code' => $e->getCode(),
-                                'message' => $e->getMessage()
-                            );
-                        }
-                    }
-
-                    // if errors, stop the loop
-                    if (\count($processingErrors) > 0){
-                        break;
-                    }
-                }
-
-                $i++;
+            try {
+                $fileHandler = fopen($newFilename, 'rb');
+            } catch(\Exception $e){
+                $processingErrors[] = array(
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage()
+                );
             }
 
-            // check for processing errors so far
-            if ($processingErrors === []){
-                // save remaining database changes
-                try{
-                    $em->flush();
-                }catch(\Exception $e){
-                    $processingErrors[] = array(
-                        'code' => $e->getCode(),
-                        'message' => $e->getMessage()
-                    );
+            // check headers, initialize query keys
+            $headerRow = fgetcsv($fileHandler, 0);
+            $queryKeys = array();
+            $updateOnly = false;
+            // loop structure array, set positions
+            foreach ($structureArray as $key => $columnHeader){
+                $positionArray = array_keys($headerRow, $columnHeader->name);
+
+                // check for duplicate headers
+                if (\count($positionArray) > 1){
+                    $columnHeader->error[] = 'Duplicate column headers';
+                    $headerErrors = true;
+                }
+
+                // check for primary header
+                if ($columnHeader->primary === true && \count($positionArray) === 0){
+                    $columnHeader->error[] = 'Primary header missing';
+                    $headerErrors = true;
+                }elseif ($columnHeader->primary === true){
+                    // set query keys
+                    $queryKeys[$key] = $positionArray[0];
+                }
+
+                // check for required, but non-primary header
+                if ($columnHeader->primary === false && $columnHeader->required === true && \count($positionArray) === 0){
+                    $columnHeader->warning[] = 'Required header missing, update only enforced';
+                    $updateOnly = true;
+                }
+
+                // set position
+                if (\count($positionArray) > 0){
+                    $columnHeader->position = $positionArray[0];
                 }
             }
 
             // close file
             fclose($fileHandler);
 
-            // check for errors
-            if ($headerErrors === false && $processingErrors === []){
+            // create message and dispatch for processing if no errors found at this point
+            if ($headerErrors === false && count($processingErrors) === 0){
+                // create message object
+                $message = new FastImportMessage();
+                $message
+                    ->setUserId($user->getId())
+                    ->setEntityClass($this->yamlConfig['entity_class'])
+                    ->setImportConfig($this->importConfig)
+                    ->setFilePath($newFilename)
+                    ->setStructure($structureArray)
+                    ->setPageName($this->yamlConfig['page_name'])
+                    ->setQueryKeys($queryKeys)
+                    ->setUpdateOnly($updateOnly);
 
-                // check for post-process script, execute
-                if (method_exists($repo, 'postFastImport')){
-                    $repo->postFastImport();
-                }
+                // dispatch message to process data
+                $envelope = new Envelope($message);
+                $bus->dispatch($envelope);
 
-                // capture finish time, set total time and message strings
-                $endTime = new \DateTime();
-                $totalTimeString = $startTime->diff($endTime)->format('%H:%I:%S');
-                $message = $this->yamlConfig['entity_name'];
-                $message .= " Import completed in ($totalTimeString).  ($newCount) new, ($updateCount) updated.";
-
-                // send to logging controller
-                if (class_exists('App\Controller\LoggingController')){
-                    $this->forward('App\Controller\LoggingController::importerLogging', array(
-                        'class' => $this->yamlConfig['entity_name'],
-                        'newCount' => $newCount,
-                        'updatedCount' => $updateCount
-                    ));
-                }
-
-                // return success message to user
-                return $this->render('@JermBundle/Modal/notification.html.twig', array(
-                    'message' => $message,
-                    'refresh' => true
+                return $this->render('@Jerm/Modal/notification.html.twig', array(
+                    'message' => 'Upload is being processed, please check logs for status',
+                    'type' => 'warning'
                 ));
+                //todo: how to notify user of errors / status / completion?
             }
         }
 
+        // display form to user
         return $this->render('@Jerm/importer/modal_form_fast_importer.html.twig', array(
             'header' => 'Upload data for bulk create/update (' . $this->yamlConfig['page_name']. ')',
             'form' => $uploadForm->createView(),
