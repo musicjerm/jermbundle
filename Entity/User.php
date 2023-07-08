@@ -96,7 +96,7 @@ class User implements UserInterface, \Serializable
         return array(
             'id' => $this->id,
             'username' => $this->username,
-            'password' => $this->password
+            'password' => $this->password ?? null
         );
     }
 

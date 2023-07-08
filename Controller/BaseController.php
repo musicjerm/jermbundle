@@ -456,7 +456,7 @@ class BaseController extends AbstractController
         $orderDir = $request->get('order')[0]['dir'];
         $firstResult = $request->get('start');
         $maxResults = $request->get('length');
-        isset($filterData) ?: $filterData = null;
+        isset($filterData) ?: $filterData = [];
 
         // set user's length setting
         if (method_exists($user, 'getSettingRpp') && method_exists($user, 'setSettingRpp') && $user->getSettingRpp() !== (int) $maxResults){

@@ -26,6 +26,12 @@
             </p>
         {% endif %}
 
+        {% if href_link is defined %}
+            <a href="{{ href_link }}" class="btn btn-link">
+                {% if href_title is defined %}{{ href_title }}{% else %}{{ href_link }}{% endif %}
+            </a>
+        {% endif %}
+
     </div>
 
     {% if fade is not defined or not fade %}
