@@ -50,7 +50,7 @@
                 <td class="text-muted">{{ loop.index }}</td>
                 <td>
                     {% if val.error|length > 0 %}
-                        <a data-toggle="tooltip" title="{{ val.errorString }}">{{ val.name }}</a>
+                        <a data-toggle="tooltip" title="{{ val.error|join(', ') }}">{{ val.name }}</a>
                     {% else %}
                         {{ val.name }}
                     {% endif %}
