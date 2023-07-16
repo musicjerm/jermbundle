@@ -2,7 +2,7 @@
 [![Author](https://img.shields.io/badge/author-@musicjerm-blue.svg)](https://github.com/musicjerm)
 [![Source Code](https://img.shields.io/badge/source-musicjerm/jermbundle-blue.svg)](https://github.com/musicjerm/jermbundle)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/musicjerm/jermbundle/blob/master/LICENSE)
-![php 8.0+](https://img.shields.io/badge/php-min%207.2-red.svg)
+![php 7.2+](https://img.shields.io/badge/php-7.2+-red.svg)
 ---
 
 JermBundle is a custom-made data focused CMS, built for use with Symfony PHP projects.  Included
@@ -59,6 +59,11 @@ After installation of the bundle, be sure to add:
 `/project/config/bundles.php` file.  The route `jerm_bundle_data_index` will require entity
 config files to be created and will provide much of the bundle's base layout with navigation, 
 data tables, filters and other customizable elements.
+
+You will also want to review the available methods and modules located in the
+[Routing](Resources/config/routes.yaml) config.
+
+Included Twig templates can be found [here](Resources/views).
 
 ### Nav Config
 If using the recommended front end libraries, you can take advantage of configurable route and 
