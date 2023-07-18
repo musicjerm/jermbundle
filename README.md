@@ -244,11 +244,11 @@ storage with Amazon's S3 cloud storage.
 ---
 
 ## TODO:
-* Refine dependency version requirements and update this readme.
-* Update base Doctrine entities to use PHP 8 annotations.
-* Clean up controllers and commenting throughout.
-* Update Bootstrap and AdminLTE to version 4, or possibly implement a custom front end template.
-* Add additional functionality to CRUD controller, specifically implement the use of data transformers instead of relying on strict entity mapping.
+- [ ] Refine dependency version requirements and update this readme.
+- [ ] Update base Doctrine entities to use PHP 8 annotations.
+- [ ] Clean up controllers and commenting throughout.
+- [ ] Update Bootstrap and AdminLTE to version 4, or possibly implement a modern front end with Vue.
+- [ ] Add additional functionality to CRUD controller, specifically implement the use of data transformers instead of relying on strict entity mapping.
 
 ---
 
