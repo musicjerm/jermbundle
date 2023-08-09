@@ -2,6 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Entity\Notification;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +12,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class NotificationController extends AbstractController
 {
+    public function __construct(private readonly ManagerRegistry $doctrine) {}
+
     /**
      * @param integer $id
      * @return Response
@@ -18,7 +21,7 @@ class NotificationController extends AbstractController
     public function viewAction($id)
     {
         /** @var Notification $notification */
-        $notificationRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
+        $notificationRepo = $this->doctrine->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
         $notification = $notificationRepo->find($id);
 
         if (null === $notification){
@@ -32,7 +35,7 @@ class NotificationController extends AbstractController
         $status = $notification->getStatus();
 
         $notification->setUnread(0);
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $em->flush();
 
         if ($notification->getHyperlink() !== null){
@@ -52,7 +55,7 @@ class NotificationController extends AbstractController
      */
     public function markReadAction(Request $request, UserInterface $user)
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $notificationRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\Notification');
 
         foreach ($request->get('id') as $id){

@@ -3,6 +3,7 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use App\Entity\User;
+use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Entity\DtFilter;
 use Musicjerm\Bundle\JermBundle\Form\DtFilterType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,13 +15,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class FiltersController extends AbstractController
 {
-    /**
-     * @param Request $request
-     * @param UserInterface|User $user
-     * @param string $entity
-     * @return Response
-     */
-    public function createAction(Request $request, UserInterface $user, $entity)
+    public function __construct(private readonly ManagerRegistry $doctrine) {}
+
+    public function createAction(Request $request, UserInterface|User $user, string $entity): Response
     {
         $filtersString = $request->getContent();
         $dtFilter = new DtFilter();
@@ -48,7 +45,7 @@ class FiltersController extends AbstractController
         unset($dataArray['_token']);
         $dtFilter->setData(http_build_query($dataArray));
 
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $em->persist($dtFilter);
 
         if ($dtFilter->getIsPrimary()){
@@ -69,16 +66,9 @@ class FiltersController extends AbstractController
         ));
     }
 
-    /**
-     * @param Request $request
-     * @param UserInterface|User $user
-     * @param string $entity
-     * @param integer $id
-     * @return Response
-     */
-    public function updateAction(Request $request, UserInterface $user, $entity, $id)
+    public function updateAction(Request $request, UserInterface $user, string $entity, int $id): Response
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $dtFilterRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
 
         /** @var DtFilter $dtFilter */
@@ -123,14 +113,9 @@ class FiltersController extends AbstractController
         ));
     }
 
-    /**
-     * @param UserInterface|User $user
-     * @param integer $id
-     * @return Response
-     */
-    public function deleteAction(UserInterface $user, $id)
+    public function deleteAction(UserInterface $user, int $id): Response
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         /**
          * @var DtFilter $dtFilter
          */

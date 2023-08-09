@@ -2,6 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -17,6 +18,8 @@ use Symfony\Component\Yaml\Yaml;
 
 class CRUDController extends AbstractController
 {
+    public function __construct(private readonly ManagerRegistry $doctrine) {}
+
     /**
      * Configuration for DataTables loaded entities
      * Store config files in /src/JBConfig/Entity/
@@ -75,7 +78,7 @@ class CRUDController extends AbstractController
         $this->yamlConfig = Yaml::parse(file_get_contents($configFile));
 
         // set class names
-        $reflectionClass = $this->getDoctrine()->getManager()->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
+        $reflectionClass = $this->doctrine->getManager()->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
         $this->yamlConfig['entity_class'] = $reflectionClass->getName();
         $this->yamlConfig['entity_name'] = $reflectionClass->getShortName();
     }
@@ -195,7 +198,7 @@ class CRUDController extends AbstractController
         }
 
         // persist object
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $em->persist($workingObject);
         $em->flush();
 
@@ -260,7 +263,7 @@ class CRUDController extends AbstractController
 
         // query object
         $id = urldecode($id);
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $workingObject = $em->find($this->yamlConfig['entity'], $id);
 
         if (!$workingObject){
@@ -389,7 +392,7 @@ class CRUDController extends AbstractController
         $this->setYamlConfig($entity);
         $ids = $request->get('id') ? $request->get('id') : $request->get('form')['id'];
         $ids ?: $ids = [];
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
 
         // set any constraints that might exist
         $constraints = array();
@@ -545,7 +548,7 @@ class CRUDController extends AbstractController
 
         // query object
         $id = urldecode($id);
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $workingObject = $em->find($this->yamlConfig['entity'], $id);
 
         if (!$workingObject){
