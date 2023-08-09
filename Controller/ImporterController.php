@@ -4,6 +4,7 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
+use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
 use Musicjerm\Bundle\JermBundle\Message\FastImportMessage;
@@ -21,6 +22,8 @@ use Symfony\Component\Yaml\Yaml;
 
 class ImporterController extends AbstractController
 {
+    public function __construct(private readonly ManagerRegistry $doctrine) {}
+
     /** @var array */
     private $yamlConfig;
 
@@ -60,7 +63,7 @@ class ImporterController extends AbstractController
         $this->yamlConfig = Yaml::parse(file_get_contents($configFile));
 
         // set class names
-        $reflectionClass = $this->getDoctrine()->getManager()->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
+        $reflectionClass = $this->doctrine->getManager()->getClassMetadata($this->yamlConfig['entity'])->getReflectionClass();
         $this->yamlConfig['entity_class'] = $reflectionClass->getName();
         $this->yamlConfig['entity_name'] = $reflectionClass->getShortName();
 

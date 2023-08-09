@@ -3,6 +3,7 @@
 namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use App\Entity\User;
+use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Entity\Subscriber;
 use Musicjerm\Bundle\JermBundle\Events\SubscriberBatchEvent;
 use Musicjerm\Bundle\JermBundle\Events\SubscriberCreateEvent;
@@ -19,6 +20,8 @@ use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter
 
 class SubscriberController extends AbstractController
 {
+    public function __construct(private readonly ManagerRegistry $doctrine) {}
+
     /**
      * @Route("/subscriber/create/{entity}/{id}", name="jerm_bundle_subscriber_create")
      * @param string $entity
@@ -35,7 +38,7 @@ class SubscriberController extends AbstractController
         $entityRepoName = 'App\Entity\\' . ucfirst($nameConverter->denormalize($entity));
 
         /** @var Subscriber $subscription */
-        $subscriptionRepo = $this->getDoctrine()->getRepository('Musicjerm\Bundle\JermBundle\Entity\Subscriber');
+        $subscriptionRepo = $this->doctrine->getRepository('Musicjerm\Bundle\JermBundle\Entity\Subscriber');
         $subscription = $subscriptionRepo->findOneBy(array(
             'entity' => $entity,
             'entityId' => $request->get('id'),
@@ -43,7 +46,7 @@ class SubscriberController extends AbstractController
         ));
 
         if ($subscription === null){
-            $entityRepo = $this->getDoctrine()->getRepository($entityRepoName);
+            $entityRepo = $this->doctrine->getRepository($entityRepoName);
             $entityLine = $entityRepo->find($request->get('id'));
 
             if ($entityLine === null){
@@ -81,7 +84,7 @@ class SubscriberController extends AbstractController
         $subscription
             ->setUserUpdated($user);
 
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $em->persist($subscription);
         $em->flush();
 
@@ -111,7 +114,7 @@ class SubscriberController extends AbstractController
         $ids = $request->get('id') ?: $request->get('batch_subscriber')['id'];
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
         $entityRepoName = 'App\Entity\\' . ucfirst($nameConverter->denormalize($entity));
-        $entityRepo = $this->getDoctrine()->getRepository($entityRepoName);
+        $entityRepo = $this->doctrine->getRepository($entityRepoName);
         $entityLines = array();
 
         foreach ((array) $ids as $id){
@@ -140,7 +143,7 @@ class SubscriberController extends AbstractController
             ));
         }
 
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->doctrine->getManager();
         $subscriberRepo = $em->getRepository('Musicjerm\Bundle\JermBundle\Entity\Subscriber');
 
         $newSubscriberCount = 0;
