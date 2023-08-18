@@ -17,8 +17,10 @@ class FiltersController extends AbstractController
 {
     public function __construct(private readonly ManagerRegistry $doctrine) {}
 
-    public function createAction(Request $request, UserInterface|User $user, string $entity): Response
+    public function createAction(Request $request, UserInterface $user, string $entity): Response
     {
+        /** @var User $user */
+
         $filtersString = $request->getContent();
         $dtFilter = new DtFilter();
         $dtFilter

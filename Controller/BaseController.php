@@ -356,7 +356,7 @@ class BaseController extends AbstractController
                     // get repo and set entity
                     $classRepo = $mr->getRepository($child->getConfig()->getOption('class'));
                     $child->setData($classRepo->find($presetData[$child->getName()]));
-                }else{
+                } elseif ($presetData[$child->getName()]) {
                     // set data
                     $child->setData($presetData[$child->getName()]);
                 }
@@ -365,8 +365,8 @@ class BaseController extends AbstractController
                     $filterChild = $this->yamlConfig['filters'][$filterKey];
 
                     // set default location if required in config
-                    if (isset($filterChild['default_location']) && $filterChild['default_location']){
-                        $child->setData($user->getLocation());
+                    if (isset($filterChild['default_location']) && $filterChild['default_location'] && method_exists($user, 'getLocation')){
+                        $child->setData($user?->getLocation());
                     }
                 }
             }
@@ -382,7 +382,7 @@ class BaseController extends AbstractController
             'yaml_config' => $this->yamlConfig,
             'entity' => $entity,
             'filters_form' => $filtersForm->createView(),
-            'advanced_filters' => isset($this->yamlConfig['advanced_filters']) ? true : false,
+            'advanced_filters' => isset($this->yamlConfig['advanced_filters']),
             'setting_rpp' => $settingRpp,
             'column_preset_form' => $columnPresetForm->createView(),
             'filter_preset_form' => $filterPresetForm->createView(),
