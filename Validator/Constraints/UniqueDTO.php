@@ -2,18 +2,17 @@
 
 namespace Musicjerm\Bundle\JermBundle\Validator\Constraints;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
-/**
- * @Annotation
- */
+#[Attribute(Attribute::TARGET_CLASS)]
 class UniqueDTO extends Constraint
 {
-    public $message = 'This value is already used.';
-    public $errorPath;
-    public $entityClass;
-    public $ignoreNull = true;
-    public $fields = array();
+    public string $message = 'This value is already used.';
+    public ?string $errorPath = null;
+    public ?string $entityClass = null;
+    public bool $ignoreNull = true;
+    public array $fields = [];
 
     public function getRequiredOptions(): array
     {
@@ -25,7 +24,7 @@ class UniqueDTO extends Constraint
         return \get_class($this) . 'Validator';
     }
 
-    public function getTargets()
+    public function getTargets(): string
     {
         return self::CLASS_CONSTRAINT;
     }

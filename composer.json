@@ -1,8 +1,23 @@
 {
     "name": "musicjerm/jermbundle",
     "type": "symfony-bundle",
-    "description": "JermBundle Library for Symfony 4 projects",
+    "description": "JermBundle Library for Symfony projects",
+    "license": "MIT",
     "autoload": {
-        "psr-4": { "Musicjerm\\Bundle\\JermBundle\\": "" }
+        "psr-4": {
+            "Musicjerm\\Bundle\\JermBundle\\": ""
+        }
+    },
+    "require": {
+        "php": ">=8.2",
+        "doctrine/doctrine-bundle": "^2.10",
+        "doctrine/orm": "^2.14|^3.0",
+        "symfony/framework-bundle": "^6.4|^7.0",
+        "symfony/security-bundle": "^6.4|^7.0",
+        "symfony/validator": "^6.4|^7.0",
+        "symfony/form": "^6.4|^7.0",
+        "symfony/twig-bundle": "^6.4|^7.0",
+        "symfony/yaml": "^6.4|^7.0",
+        "symfony/serializer": "^6.4|^7.0"
     }
 }

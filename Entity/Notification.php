@@ -4,68 +4,40 @@ namespace Musicjerm\Bundle\JermBundle\Entity;
 
 use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
+use Musicjerm\Bundle\JermBundle\Repository\NotificationRepository;
 
-/**
- * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\NotificationRepository")
- */
+#[ORM\Entity(repositoryClass: NotificationRepository::class)]
 class Notification
 {
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
+    private ?User $user = null;
 
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $date;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $date = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $subject;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $subject = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="text")
-     */
-    private $message;
+    #[ORM\Column(type: 'text')]
+    private ?string $message = null;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    private $unread;
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $unread = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    private $icon;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $icon = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64, nullable=true)
-     */
-    private $class;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $class = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128, nullable=true)
-     */
-    private $hyperlink;
+    #[ORM\Column(type: 'string', length: 128, nullable: true)]
+    private ?string $hyperlink = null;
 
     public function __toString(): string
     {

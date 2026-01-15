@@ -25,7 +25,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -399,10 +399,9 @@ class BaseController extends AbstractController
      * @return JsonResponse
      * @throws \Exception
      */
-    public function dataColumnsAction(ManagerRegistry $mr, UserInterface $user, $entity, $column_preset = -1)
+    public function dataColumnsAction(ManagerRegistry $mr, UserInterface $user, Security $security, $entity, $column_preset = -1)
     {
         $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
-        $security = new Security($this->container);
 
         $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
@@ -427,10 +426,9 @@ class BaseController extends AbstractController
      * @return JsonResponse
      * @throws \Exception
      */
-    public function dataQueryAction(ManagerRegistry $mr, Request $request, UserInterface $user, $entity, $column_preset = -1)
+    public function dataQueryAction(ManagerRegistry $mr, Request $request, UserInterface $user, Security $security, $entity, $column_preset = -1)
     {
         $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
-        $security = new Security($this->container);
 
         $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
@@ -558,10 +556,9 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function getCsvAction(ManagerRegistry $mr, UserInterface $user, Request $request, $entity, $column_preset = -1, $filter_preset = -1)
+    public function getCsvAction(ManagerRegistry $mr, UserInterface $user, Request $request, Security $security, $entity, $column_preset = -1, $filter_preset = -1)
     {
         $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
-        $security = new Security($this->container);
 
         $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
@@ -690,14 +687,13 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function getExcelAction(Connection $connection, ManagerRegistry $mr, UserInterface $user, Request $request, string $entity, int $column_preset = -1, int $filter_preset = -1): Response
+    public function getExcelAction(Connection $connection, ManagerRegistry $mr, UserInterface $user, Request $request, Security $security, string $entity, int $column_preset = -1, int $filter_preset = -1): Response
     {
         // allow some time and start timer
         set_time_limit(0);
         $timeStart = new \DateTime();
 
         $this->setYamlConfig($mr, $entity, $user, false, $column_preset);
-        $security = new Security($this->container);
 
         $columnBuilder = new ColumnBuilder($this->yamlConfig, $security);
         $columnBuilder->buildColumns();
@@ -1054,7 +1050,7 @@ class BaseController extends AbstractController
      * @return Response
      * @throws \Exception
      */
-    public function navAction(Request $request): Response
+    public function navAction(Request $request, Security $security): Response
     {
         $configDir = $this->getParameter('kernel.project_dir') . '/src/JBConfig';
 
@@ -1068,7 +1064,6 @@ class BaseController extends AbstractController
             unset($params['filter_preset'], $params['column_preset']);
         }
 
-        $security = new Security($this->container);
         $navModel = new NavModel($security);
         $navModel
             ->setNavData($yamlNav)

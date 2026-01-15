@@ -4,93 +4,56 @@ namespace Musicjerm\Bundle\JermBundle\Entity;
 
 use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
+use Musicjerm\Bundle\JermBundle\Repository\SubscriberRepository;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\SubscriberRepository")
- * @UniqueEntity(fields={"entity", "entityId", "user"}, message="User has already subscribed to this item")
- * @Assert\Expression(
- *     "this.getSystem() or this.getEmail()",
- *     message="Must opt to receive at least one type of notification"
- * )
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Entity(repositoryClass: SubscriberRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['entity', 'entityId', 'user'], message: 'User has already subscribed to this item')]
+#[Assert\Expression(expression: 'this.getSystem() or this.getEmail()', message: 'Must opt to receive at least one type of notification')]
 class Subscriber
 {
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128, nullable=true)
-     */
-    private $entity;
+    #[ORM\Column(type: 'string', length: 128, nullable: true)]
+    private ?string $entity = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128, nullable=true)
-     */
-    private $entityId;
+    #[ORM\Column(type: 'string', length: 128, nullable: true)]
+    private ?string $entityId = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $description;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
-     * @Assert\NotBlank()
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
+    #[Assert\NotBlank]
+    private ?User $user = null;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    private $email;
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $email = null;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    private $system;
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $system = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user_created", referencedColumnName="id")
-     */
-    private $userCreated;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_created', referencedColumnName: 'id')]
+    private ?User $userCreated = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user_updated", referencedColumnName="id")
-     */
-    private $userUpdated;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_updated', referencedColumnName: 'id')]
+    private ?User $userUpdated = null;
 
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $dateCreated;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $dateCreated = null;
 
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $dateUpdated;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $dateUpdated = null;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getEntity() . ', ID: (' . $this->getEntityId() . ')';
     }
@@ -188,10 +151,7 @@ class Subscriber
         return $this->userUpdated;
     }
 
-    /**
-     * @ORM\PrePersist()
-     * @throws \Exception
-     */
+    #[ORM\PrePersist]
     public function setDateCreated(): self
     {
         $this->dateCreated = new \DateTime();
@@ -203,11 +163,8 @@ class Subscriber
         return $this->dateCreated;
     }
 
-    /**
-     * @ORM\PrePersist()
-     * @ORM\PreUpdate()
-     * @throws \Exception
-     */
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
     public function setDateUpdated(): self
     {
         $this->dateUpdated = new \DateTime();

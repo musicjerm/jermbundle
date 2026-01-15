@@ -3,60 +3,38 @@
 namespace Musicjerm\Bundle\JermBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Musicjerm\Bundle\JermBundle\Repository\CommitRepository;
 
-/**
- * @ORM\Table(name="git_commit")
- * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\CommitRepository")
- */
+#[ORM\Table(name: 'git_commit')]
+#[ORM\Entity(repositoryClass: CommitRepository::class)]
 class Commit
 {
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $gitRepo;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $gitRepo = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $commit;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $commit = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $author;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $author = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="text")
-     */
-    private $notes;
+    #[ORM\Column(type: 'text')]
+    private ?string $notes = null;
 
-    /**
-     * @var \DateTime
-     * @ORM\Column(type="datetime")
-     */
-    private $date;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $date = null;
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function setGitRepo($gitRepo)
+    public function setGitRepo($gitRepo): self
     {
         $this->gitRepo = $gitRepo;
         return $this;
@@ -67,7 +45,7 @@ class Commit
         return $this->gitRepo;
     }
 
-    public function setCommit($commit)
+    public function setCommit($commit): self
     {
         $this->commit = $commit;
         return $this;
@@ -83,7 +61,7 @@ class Commit
         return substr($this->commit, 0, 7);
     }
 
-    public function setAuthor($author)
+    public function setAuthor($author): self
     {
         $this->author = $author;
         return $this;
@@ -94,7 +72,7 @@ class Commit
         return $this->author;
     }
 
-    public function setNotes($notes)
+    public function setNotes($notes): self
     {
         $this->notes = $notes;
         return $this;
@@ -105,7 +83,7 @@ class Commit
         return $this->notes;
     }
 
-    public function setDate($date)
+    public function setDate($date): self
     {
         $this->date = $date;
         return $this;

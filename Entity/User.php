@@ -4,7 +4,7 @@ namespace Musicjerm\Bundle\JermBundle\Entity;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class User implements UserInterface, \Serializable
+class User implements UserInterface
 {
     protected ?int $id;
 
@@ -82,15 +82,6 @@ class User implements UserInterface, \Serializable
 
     public function eraseCredentials(): void{}
 
-    public function serialize()
-    {
-        return serialize(array(
-            $this->id,
-            $this->username,
-            $this->password
-        ));
-    }
-
     public function __serialize(): array
     {
         return array(
@@ -100,12 +91,7 @@ class User implements UserInterface, \Serializable
         );
     }
 
-    public function unserialize($serialized): void
-    {
-        [$this->id, $this->username, $this->password] = unserialize($serialized, ['allowed_classes' => [self::class]]);
-    }
-
-    public function __unserialize($serialized): void
+    public function __unserialize(array $serialized): void
     {
         $this->id = $serialized['id'];
         $this->username = $serialized['username'];

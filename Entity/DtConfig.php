@@ -7,86 +7,48 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity()
- * @UniqueEntity(
- *     fields={"user", "name", "entity"}, message="You already have a preset with this name.",
- *     errorPath="name"
- * )
- */
+#[ORM\Entity]
+#[UniqueEntity(fields: ['user', 'name', 'entity'], message: 'You already have a preset with this name.', errorPath: 'name')]
 class DtConfig
 {
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     * @Assert\NotBlank()
-     */
-    private $name;
+    #[ORM\Column(type: 'string', length: 128)]
+    #[Assert\NotBlank]
+    private ?string $name = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
+    private ?User $user = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $entity;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $entity = null;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     */
-    private $sortId;
+    #[ORM\Column(type: 'integer')]
+    private ?int $sortId = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $sortDir;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $sortDir = null;
 
-    /**
-     * @var array
-     * @ORM\Column(type="simple_array")
-     * @Assert\NotBlank(message="Please select at least (1) column for view.")
-     */
-    private $view;
+    #[ORM\Column(type: 'json')]
+    #[Assert\NotBlank(message: 'Please select at least (1) column for view.')]
+    private array $view = [];
 
-    /**
-     * @var array
-     * @ORM\Column(type="simple_array")
-     * @Assert\NotBlank(message="Please select at least (1) column for csv dump.")
-     */
-    private $dataDump;
+    #[ORM\Column(type: 'json')]
+    #[Assert\NotBlank(message: 'Please select at least (1) column for csv dump.')]
+    private array $dataDump = [];
 
-    /**
-     * @var array
-     * @ORM\Column(type="simple_array")
-     */
-    private $tooltip;
+    #[ORM\Column(type: 'json')]
+    private array $tooltip = [];
 
-    /**
-     * @var array
-     * @ORM\Column(type="simple_array")
-     */
-    private $colOrder;
+    #[ORM\Column(type: 'json')]
+    private array $colOrder = [];
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    private $isPrimary;
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $isPrimary = null;
 
     public function __toString(): string
     {

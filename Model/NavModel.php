@@ -2,7 +2,7 @@
 
 namespace Musicjerm\Bundle\JermBundle\Model;
 
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class NavModel
 {

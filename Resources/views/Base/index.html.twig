@@ -1,5 +1,5 @@
-{% if app.user().settingSkin is defined and app.user().settingSkin %}
-    {% set active_skin = app.user().settingSkin %}
+{% if app.user.settingSkin is defined and app.user.settingSkin %}
+    {% set active_skin = app.user.settingSkin %}
 {% else %}
     {% set active_skin = 'skin-blue' %}
 {% endif %}
@@ -58,23 +58,23 @@
                         <li class="dropdown user user-menu">
                             {% if app.user %}
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                    {% if app.user().profilePic is defined and app.user().profilePic %}
-                                        <img src="{{ asset('app/img/userProfile/' ~ app.user().profilePic) }}" class="user-image" alt="Avatar">
+                                    {% if app.user.profilePic is defined and app.user.profilePic %}
+                                        <img src="{{ asset('app/img/userProfile/' ~ app.user.profilePic) }}" class="user-image" alt="Avatar">
                                     {% else %}
                                         <img src="{{ asset('bundles/jerm/img/avatar.gif') }}" class="user-image" alt="Avatar">
                                     {% endif %}
-                                    <span class="hidden-xs">{{ app.user().getUsername }}</span>
+                                    <span class="hidden-xs">{{ app.user.getUsername }}</span>
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li class="user-header">
-                                        {% if app.user().profilePic is defined and app.user().profilePic %}
-                                            <img src="{{ asset('app/img/userProfile/' ~ app.user().profilePic) }}" class="img-circle" alt="Avatar">
+                                        {% if app.user.profilePic is defined and app.user.profilePic %}
+                                            <img src="{{ asset('app/img/userProfile/' ~ app.user.profilePic) }}" class="img-circle" alt="Avatar">
                                         {% else %}
                                             <img src="{{ asset('bundles/jerm/img/avatar.gif') }}" class="img-circle" alt="Avatar">
                                         {% endif %}
                                         <p>
-                                            {% if app.user().getFirstName is defined and app.user().getFirstName %}
-                                                {{ app.user().getFirstName }} {{ app.user().getLastName }}
+                                            {% if app.user.getFirstName is defined and app.user.getFirstName %}
+                                                {{ app.user.getFirstName }} {{ app.user.getLastName }}
                                             {% endif %}
                                             <small>{{ "Now"|date('m-d-Y') }}</small>
                                         </p>

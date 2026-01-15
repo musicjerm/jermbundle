@@ -7,54 +7,31 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity()
- * @UniqueEntity(
- *     fields={"user", "name", "entity"}, message="You already have a preset with this name.",
- *     errorPath="name"
- * )
- */
+#[ORM\Entity]
+#[UniqueEntity(fields: ['user', 'name', 'entity'], message: 'You already have a preset with this name.', errorPath: 'name')]
 class DtFilter
 {
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    private ?int $id = null;
 
-    /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
+    private ?User $user = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     */
-    private $entity;
+    #[ORM\Column(type: 'string', length: 128)]
+    private ?string $entity = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=128)
-     * @Assert\NotBlank()
-     */
-    private $name;
+    #[ORM\Column(type: 'string', length: 128)]
+    #[Assert\NotBlank]
+    private ?string $name = null;
 
-    /**
-     * @var string
-     * @ORM\Column(type="text")
-     */
-    private $data;
+    #[ORM\Column(type: 'text')]
+    private ?string $data = null;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    private $isPrimary;
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $isPrimary = null;
 
     public function __toString(): string
     {
