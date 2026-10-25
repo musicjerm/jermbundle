@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -56,7 +57,7 @@ class ImporterController extends AbstractController
         }
 
         if ($configFile === null){
-            throw new \Exception('JB Entity config file is missing.', 500);
+            throw new NotFoundHttpException('JB Entity config file is missing.');
         }
 
         // set private array
