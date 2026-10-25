@@ -142,7 +142,7 @@ class BaseController extends AbstractController
         $em->flush();
 
         if ($columnPreset >= 0){
-            $this->loadedConfig = $dtConfigRepo->find($columnPreset);
+            $this->loadedConfig = $dtConfigRepo->findOneBy(['id' => $columnPreset, 'user' => $user, 'entity' => $configName]);
         }else {
             $this->loadedConfig = $dtConfigRepo->findOneBy(['user' => $user, 'entity' => $configName, 'isPrimary' => true]);
         }
@@ -299,10 +299,7 @@ class BaseController extends AbstractController
          */
         $dtFilterRepo = $mr->getRepository('Musicjerm\Bundle\JermBundle\Entity\DtFilter');
         if ($filter_preset >= 0){
-            $primaryFilter = $dtFilterRepo->find($filter_preset);
-            if ($primaryFilter && $primaryFilter->getEntity() !== $entity){
-                $primaryFilter = null;
-            }
+            $primaryFilter = $dtFilterRepo->findOneBy(['id' => $filter_preset, 'user' => $user, 'entity' => $entity]);
         }else{
             $primaryFilter = $dtFilterRepo->findOneBy(['user' => $user, 'entity' => $entity, 'isPrimary' => true]);
         }
@@ -453,7 +450,8 @@ class BaseController extends AbstractController
         // set query parameters
         $order = $request->get('order')[0]['column'];
         $orderBy = $columnBuilder->getColumns()[$order]['sort'];
-        $orderDir = $request->get('order')[0]['dir'];
+        // pasted into the query's ORDER BY, so never pass the request's value through
+        $orderDir = strtolower((string) $request->get('order')[0]['dir']) === 'desc' ? 'desc' : 'asc';
         $firstResult = $request->get('start');
         $maxResults = $request->get('length');
         isset($filterData) ?: $filterData = [];
@@ -965,6 +963,10 @@ class BaseController extends AbstractController
                 'message' => 'This config does not exist, please refresh your screen.',
                 'type' => 'error'
             ));
+        }
+
+        if ($workingConfig->getUser() !== $user){
+            throw new AccessDeniedException();
         }
 
         $columnNames = array();
