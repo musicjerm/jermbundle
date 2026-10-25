@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -71,7 +72,7 @@ class CRUDController extends AbstractController
         }
 
         if ($configFile === null){
-            throw new \Exception('JB Entity config file is missing.', 500);
+            throw new NotFoundHttpException('JB Entity config file is missing.');
         }
 
         // set private array

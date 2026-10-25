@@ -28,6 +28,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -91,7 +92,7 @@ class BaseController extends AbstractController
         }
 
         if ($configFile === null){
-            throw new \Exception('JB Entity config file is missing.', 500);
+            throw new NotFoundHttpException('JB Entity config file is missing.');
         }
 
         $this->yamlConfig = Yaml::parse(file_get_contents($configFile));
@@ -448,8 +449,10 @@ class BaseController extends AbstractController
         }
 
         // set query parameters
+        // the action column has no sort field, so it and unknown columns use the default sort
+        $columns = $columnBuilder->getColumns();
         $order = $request->get('order')[0]['column'];
-        $orderBy = $columnBuilder->getColumns()[$order]['sort'];
+        $orderBy = $columns[$order]['sort'] ?? $columns[$columnBuilder->getSortId()]['sort'];
         // pasted into the query's ORDER BY, so never pass the request's value through
         $orderDir = strtolower((string) $request->get('order')[0]['dir']) === 'desc' ? 'desc' : 'asc';
         $firstResult = $request->get('start');
