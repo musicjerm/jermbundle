@@ -4,5 +4,8 @@
     "description": "JermBundle Library for Symfony 4 projects",
     "autoload": {
         "psr-4": { "Musicjerm\\Bundle\\JermBundle\\": "" }
+    },
+    "conflict": {
+        "doctrine/orm": "<2.8"
     }
 }
