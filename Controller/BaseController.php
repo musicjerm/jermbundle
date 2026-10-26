@@ -5,6 +5,7 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 use App\Entity\User;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Form\DtConfigType;
@@ -31,6 +32,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Yaml\Yaml;
 use Doctrine\ORM\EntityRepository;
@@ -643,9 +645,20 @@ class BaseController extends AbstractController
         $rootEntity = $em->getClassMetadata($this->yamlConfig['entity'])->rootEntityName;
         $alreadyManaged = array_flip(array_map('spl_object_id', $em->getUnitOfWork()->getIdentityMap()[$rootEntity] ?? array()));
 
+        try {
+            $rows = $query->toIterable();
+        } catch (QueryException $e) {
+            // Doctrine won't iterate a query joined to a to-many relation unless it's DISTINCT,
+            // so those load all at once
+            $query->setHint(Query::HINT_INTERNAL_ITERATION, false);
+            $rows = $query->getResult();
+        }
+
+        // The CSV is complete before the response starts, so an export that fails partway still gets
+        // an error page. php://temp keeps all but its first 2MB on disk.
         $output = fopen('php://temp', 'rb+');
         fputcsv($output, $columnNames);
-        foreach ($query->toIterable() as $item){
+        foreach ($rows as $item){
             $tempArray = array();
             foreach ($columnBuilder->getColumns() as $col){
                 if($col['dumpable'] && count($object = explode('.', $col['data'])) > 1 && method_exists($item, $getter = 'get'.ucfirst($object[0]))){
@@ -674,16 +687,16 @@ class BaseController extends AbstractController
             }
         }
         rewind($output);
-        $dataDump = stream_get_contents($output);
-        fclose($output);
 
         // return to user
         $date = new \DateTime('now');
         $newFileName = $this->getParameter('app_name').'_'.ucfirst($entity).'_Export_'.$date->format('Y-m-d');
-        $response = new Response();
+        $response = new StreamedResponse(function () use ($output){
+            fpassthru($output);
+            fclose($output);
+        });
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment; filename="'.$newFileName.'.csv"');
-        $response->setContent($dataDump);
         return $response;
     }
 
