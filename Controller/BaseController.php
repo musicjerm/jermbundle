@@ -8,7 +8,6 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Form\DtConfigType;
-use Musicjerm\Bundle\JermBundle\Model\CSVDataModel;
 use Musicjerm\Bundle\JermBundle\Entity\DtConfig;
 use Musicjerm\Bundle\JermBundle\Entity\DtFilter;
 use Musicjerm\Bundle\JermBundle\Form\BlankFilterType;
@@ -629,9 +628,24 @@ class BaseController extends AbstractController
         /** @var Query $query */
         $query = $this->entityRepository->$queryMethod($orderBy, $orderDir, $firstResult, $maxResults, $filterData, $user);
 
-        // parse data and put "dumpable" columns into array for csv output
-        $data = array();
-        foreach ($query->getResult() as $item){
+        // set column names
+        $columnNames = array();
+        foreach ($columnBuilder->getColumns() as $col){
+            if (isset($col['dumpable']) && $col['dumpable']){
+                $columnNames[] = $col['title'];
+            }
+        }
+
+        // Write each row as it loads and detach its entity afterwards, so the export doesn't need
+        // the whole table in memory. Entities that were loaded before the export stay managed:
+        // the logged-in user, for one, is still in use by the rest of the request.
+        $em = $mr->getManagerForClass($this->yamlConfig['entity']);
+        $rootEntity = $em->getClassMetadata($this->yamlConfig['entity'])->rootEntityName;
+        $alreadyManaged = array_flip(array_map('spl_object_id', $em->getUnitOfWork()->getIdentityMap()[$rootEntity] ?? array()));
+
+        $output = fopen('php://temp', 'rb+');
+        fputcsv($output, $columnNames);
+        foreach ($query->toIterable() as $item){
             $tempArray = array();
             foreach ($columnBuilder->getColumns() as $col){
                 if($col['dumpable'] && count($object = explode('.', $col['data'])) > 1 && method_exists($item, $getter = 'get'.ucfirst($object[0]))){
@@ -653,22 +667,15 @@ class BaseController extends AbstractController
                     $tempArray[] = null;
                 }
             }
-            $data[] = $tempArray;
-        }
+            fputcsv($output, $tempArray);
 
-        // set column names
-        $columnNames = array();
-        foreach ($columnBuilder->getColumns() as $col){
-            if (isset($col['dumpable']) && $col['dumpable']){
-                $columnNames[] = $col['title'];
+            if (!isset($alreadyManaged[spl_object_id($item)])){
+                $em->detach($item);
             }
         }
-
-        // build csv data
-        $dumpModel = new CSVDataModel();
-        $dumpModel->setColumnNames($columnNames);
-        $dumpModel->setData($data);
-        $dataDump = $dumpModel->buildCsv();
+        rewind($output);
+        $dataDump = stream_get_contents($output);
+        fclose($output);
 
         // return to user
         $date = new \DateTime('now');
