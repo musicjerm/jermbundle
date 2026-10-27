@@ -137,8 +137,10 @@ class ExcelDownloader
     /** @throws \PhpOffice\PhpSpreadsheet\Writer\Exception */
     public function saveFile(): void
     {
-        // make sure directory exists
-        !is_dir($this->filePath) && !mkdir($this->filePath) && !is_dir($this->filePath);
+        // its parents may be missing too: an app deployed from git has no gitignored documents/
+        if (!is_dir($this->filePath) && !mkdir($this->filePath, 0777, true) && !is_dir($this->filePath)) {
+            throw new \RuntimeException(sprintf('Could not create the export directory "%s"', $this->filePath));
+        }
 
         // create writer and save file
         $writer = new Xlsx($this->workbook);
