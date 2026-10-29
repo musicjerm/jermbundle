@@ -32,8 +32,8 @@ Please see requirements, configuration and other information below.
 ---
 
 ## Requirements
-* PHP 7.2 or higher
-* Symfony 4 or Symfony 5
+* PHP 8.1 or higher
+* Symfony 6.4 (6.2 at least, for attribute routes)
 * Doctrine
 * PHPOffice/PhpSpreadsheet for exporting data to Excel format
 
