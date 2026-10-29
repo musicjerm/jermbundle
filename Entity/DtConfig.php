@@ -7,85 +7,80 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity()
- * @UniqueEntity(
- *     fields={"user", "name", "entity"}, message="You already have a preset with this name.",
- *     errorPath="name"
- * )
- */
+#[ORM\Entity]
+#[UniqueEntity(fields: ['user', 'name', 'entity'], message: 'You already have a preset with this name.', errorPath: 'name')]
 class DtConfig
 {
     /**
      * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
-     * @Assert\NotBlank()
      */
+    #[ORM\Column(type: 'string', length: 128)]
+    #[Assert\NotBlank]
     private $name;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: \App\Entity\User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
     private $user;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
      */
+    #[ORM\Column(type: 'string', length: 128)]
     private $entity;
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
      */
+    #[ORM\Column(type: 'integer')]
     private $sortId;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
      */
+    #[ORM\Column(type: 'string', length: 128)]
     private $sortDir;
 
     /**
      * @var array
-     * @ORM\Column(type="simple_array")
-     * @Assert\NotBlank(message="Please select at least (1) column for view.")
      */
+    #[ORM\Column(type: 'simple_array')]
+    #[Assert\NotBlank(message: 'Please select at least (1) column for view.')]
     private $view;
 
     /**
      * @var array
-     * @ORM\Column(type="simple_array")
-     * @Assert\NotBlank(message="Please select at least (1) column for csv dump.")
      */
+    #[ORM\Column(type: 'simple_array')]
+    #[Assert\NotBlank(message: 'Please select at least (1) column for csv dump.')]
     private $dataDump;
 
     /**
      * @var array
-     * @ORM\Column(type="simple_array")
      */
+    #[ORM\Column(type: 'simple_array')]
     private $tooltip;
 
     /**
      * @var array
-     * @ORM\Column(type="simple_array")
      */
+    #[ORM\Column(type: 'simple_array')]
     private $colOrder;
 
     /**
      * @var bool
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     private $isPrimary;
 
     public function __toString(): string

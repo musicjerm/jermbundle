@@ -4,48 +4,46 @@ namespace Musicjerm\Bundle\JermBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="git_commit")
- * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\CommitRepository")
- */
+#[ORM\Entity(repositoryClass: \Musicjerm\Bundle\JermBundle\Repository\CommitRepository::class)]
+#[ORM\Table(name: 'git_commit')]
 class Commit
 {
     /**
      * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
      */
+    #[ORM\Column(type: 'string', length: 128)]
     private $gitRepo;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
      */
+    #[ORM\Column(type: 'string', length: 128)]
     private $commit;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
      */
+    #[ORM\Column(type: 'string', length: 128)]
     private $author;
 
     /**
      * @var string
-     * @ORM\Column(type="text")
      */
+    #[ORM\Column(type: 'text')]
     private $notes;
 
     /**
      * @var \DateTime
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     private $date;
 
     /**

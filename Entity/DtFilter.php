@@ -7,53 +7,48 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity()
- * @UniqueEntity(
- *     fields={"user", "name", "entity"}, message="You already have a preset with this name.",
- *     errorPath="name"
- * )
- */
+#[ORM\Entity]
+#[UniqueEntity(fields: ['user', 'name', 'entity'], message: 'You already have a preset with this name.', errorPath: 'name')]
 class DtFilter
 {
     /**
      * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: \App\Entity\User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
     private $user;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
      */
+    #[ORM\Column(type: 'string', length: 128)]
     private $entity;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128)
-     * @Assert\NotBlank()
      */
+    #[ORM\Column(type: 'string', length: 128)]
+    #[Assert\NotBlank]
     private $name;
 
     /**
      * @var string
-     * @ORM\Column(type="text")
      */
+    #[ORM\Column(type: 'text')]
     private $data;
 
     /**
      * @var bool
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     private $isPrimary;
 
     public function __toString(): string

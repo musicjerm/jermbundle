@@ -14,7 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
@@ -23,7 +23,6 @@ class SubscriberController extends AbstractController
     public function __construct(private readonly ManagerRegistry $doctrine) {}
 
     /**
-     * @Route("/subscriber/create/{entity}/{id}", name="jerm_bundle_subscriber_create")
      * @param string $entity
      * @param string $id
      * @param Request $request
@@ -32,6 +31,7 @@ class SubscriberController extends AbstractController
      * @return Response
      * @throws \Exception
      */
+    #[Route(path: '/subscriber/create/{entity}/{id}', name: 'jerm_bundle_subscriber_create')]
     public function createAction($entity, $id, Request $request, UserInterface $user, EventDispatcherInterface $dispatcher): Response
     {
         $nameConverter = new CamelCaseToSnakeCaseNameConverter();
@@ -101,7 +101,6 @@ class SubscriberController extends AbstractController
     }
 
     /**
-     * @Route("/subscriber/batch/{entity}", name="jerm_bundle_subscriber_batch")
      * @param EventDispatcherInterface $dispatcher
      * @param Request $request
      * @param UserInterface|User $user
@@ -109,6 +108,7 @@ class SubscriberController extends AbstractController
      * @return Response
      * @throws \Exception
      */
+    #[Route(path: '/subscriber/batch/{entity}', name: 'jerm_bundle_subscriber_batch')]
     public function batchAction(EventDispatcherInterface $dispatcher, Request $request, UserInterface $user, $entity): Response
     {
         $ids = $request->get('id') ?: $request->get('batch_subscriber')['id'];
