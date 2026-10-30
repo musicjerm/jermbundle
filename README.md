@@ -32,10 +32,10 @@ Please see requirements, configuration and other information below.
 ---
 
 ## Requirements
-* PHP 8.1 or higher
-* Symfony 6.4 (6.2 at least, for attribute routes)
-* Doctrine
-* PHPOffice/PhpSpreadsheet for exporting data to Excel format
+* PHP 8.3 or higher
+* Symfony 6.4
+* Doctrine ORM 2.13 or higher (2.x)
+* PHPOffice/PhpSpreadsheet 2.x for exporting data to Excel format
 
 ### Front end (recommended to utilize all functionality)
 * Twig

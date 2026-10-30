@@ -6,7 +6,7 @@ use Symfony\Component\Validator\Constraint;
 
 /**
  * Usable as an attribute or, while doctrine/annotations is installed, a docblock annotation:
- * #[UniqueDTO(entityClass: Invite::class, fields: ['email'], errorPath: 'email')]
+ * #[UniqueDTOedit(entityClass: Invite::class, fields: ['email'], errorPath: 'email')]
  *
  * @Annotation
  */
