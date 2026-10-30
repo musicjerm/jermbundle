@@ -34,7 +34,7 @@ Please see requirements, configuration and other information below.
 ## Requirements
 * PHP 8.3 or higher
 * Symfony 6.4
-* Doctrine ORM 2.13 or higher (2.x)
+* Doctrine ORM 2.20 or higher (2.x), DBAL 3.8 or higher (3.x), DoctrineBundle 2.13 or higher (2.x)
 * PHPOffice/PhpSpreadsheet 2.x for exporting data to Excel format
 
 ### Front end (recommended to utilize all functionality)
