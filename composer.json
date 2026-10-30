@@ -2,6 +2,7 @@
     "name": "musicjerm/jermbundle",
     "type": "symfony-bundle",
     "description": "JermBundle Library for Symfony 6.4 projects",
+    "license": "MIT",
     "autoload": {
         "psr-4": { "Musicjerm\\Bundle\\JermBundle\\": "" }
     },
