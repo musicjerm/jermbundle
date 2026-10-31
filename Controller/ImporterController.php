@@ -4,6 +4,7 @@ namespace Musicjerm\Bundle\JermBundle\Controller;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\MySqlSchemaManager;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadData;
 use Musicjerm\Bundle\JermBundle\Form\Importer\ImporterUploadType;
@@ -162,7 +163,7 @@ class ImporterController extends AbstractController
                 $structureArray[$ic]->foreignKey = $columnFks[$ic];
                 $structureArray[$ic]->repo = 'App\Entity\\'.ucfirst($nameConverter->denormalize($columnFks[$ic]['table']));
             }else{
-                $structureArray[$ic]->type = $columnList[$nameConverter->normalize($ic)]->getType()->getName();
+                $structureArray[$ic]->type = Type::getTypeRegistry()->lookupName($columnList[$nameConverter->normalize($ic)]->getType());
             }
             $structureArray[$ic]->required = $columnList[$nameConverter->normalize($ic)]->getNotnull();
             if ($columnList[$nameConverter->normalize($ic)]->getLength()){

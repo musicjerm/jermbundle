@@ -32,10 +32,10 @@ Please see requirements, configuration and other information below.
 ---
 
 ## Requirements
-* PHP 7.2 or higher
-* Symfony 4 or Symfony 5
-* Doctrine
-* PHPOffice/PhpSpreadsheet for exporting data to Excel format
+* PHP 8.3 or higher
+* Symfony 6.4
+* Doctrine ORM 2.20 or higher (2.x), DBAL 3.8 or higher (3.x), DoctrineBundle 2.13 or higher (2.x)
+* PHPOffice/PhpSpreadsheet 2.x for exporting data to Excel format
 
 ### Front end (recommended to utilize all functionality)
 * Twig
@@ -245,7 +245,7 @@ storage with Amazon's S3 cloud storage.
 
 ## TODO:
 - [ ] Refine dependency version requirements and update this readme.
-- [ ] Update base Doctrine entities to use PHP 8 annotations.
+- [x] Update base Doctrine entities to use PHP 8 attributes.
 - [ ] Clean up controllers and commenting throughout.
 - [ ] Update Bootstrap and AdminLTE to version 4, or possibly implement a modern front end with Vue.
 - [ ] Add additional functionality to CRUD controller, specifically implement the use of data transformers instead of relying on strict entity mapping.

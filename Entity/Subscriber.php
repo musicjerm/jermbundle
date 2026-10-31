@@ -7,87 +7,82 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-/**
- * @ORM\Entity(repositoryClass="Musicjerm\Bundle\JermBundle\Repository\SubscriberRepository")
- * @UniqueEntity(fields={"entity", "entityId", "user"}, message="User has already subscribed to this item")
- * @Assert\Expression(
- *     "this.getSystem() or this.getEmail()",
- *     message="Must opt to receive at least one type of notification"
- * )
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Entity(repositoryClass: \Musicjerm\Bundle\JermBundle\Repository\SubscriberRepository::class)]
+#[UniqueEntity(fields: ['entity', 'entityId', 'user'], message: 'User has already subscribed to this item')]
+#[Assert\Expression('this.getSystem() or this.getEmail()', message: 'Must opt to receive at least one type of notification')]
+#[ORM\HasLifecycleCallbacks]
 class Subscriber
 {
     /**
      * @var int
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128, nullable=true)
      */
+    #[ORM\Column(type: 'string', length: 128, nullable: true)]
     private $entity;
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=128, nullable=true)
      */
+    #[ORM\Column(type: 'string', length: 128, nullable: true)]
     private $entityId;
 
     /**
      * @var string
-     * @ORM\Column(type="text", nullable=true)
      */
+    #[ORM\Column(type: 'text', nullable: true)]
     private $description;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="id")
-     * @Assert\NotBlank()
      */
+    #[ORM\ManyToOne(targetEntity: \App\Entity\User::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
+    #[Assert\NotBlank]
     private $user;
 
     /**
      * @var bool
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     private $email;
 
     /**
      * @var bool
-     * @ORM\Column(type="boolean")
      */
+    #[ORM\Column(type: 'boolean')]
     private $system;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user_created", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: \App\Entity\User::class)]
+    #[ORM\JoinColumn(name: 'user_created', referencedColumnName: 'id')]
     private $userCreated;
 
     /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(name="user_updated", referencedColumnName="id")
      */
+    #[ORM\ManyToOne(targetEntity: \App\Entity\User::class)]
+    #[ORM\JoinColumn(name: 'user_updated', referencedColumnName: 'id')]
     private $userUpdated;
 
     /**
      * @var \DateTime
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     private $dateCreated;
 
     /**
      * @var \DateTime
-     * @ORM\Column(type="datetime")
      */
+    #[ORM\Column(type: 'datetime')]
     private $dateUpdated;
 
     public function __toString()
@@ -189,9 +184,9 @@ class Subscriber
     }
 
     /**
-     * @ORM\PrePersist()
      * @throws \Exception
      */
+    #[ORM\PrePersist]
     public function setDateCreated(): self
     {
         $this->dateCreated = new \DateTime();
@@ -204,10 +199,10 @@ class Subscriber
     }
 
     /**
-     * @ORM\PrePersist()
-     * @ORM\PreUpdate()
      * @throws \Exception
      */
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
     public function setDateUpdated(): self
     {
         $this->dateUpdated = new \DateTime();

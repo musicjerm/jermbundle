@@ -7,12 +7,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * BatchSubscriberModel
- *
- * @Assert\Expression(
- *     "this.getSystem() or this.getEmail()",
- *     message="Must select at least one type of notification"
- * )
  */
+#[Assert\Expression('this.getSystem() or this.getEmail()', message: 'Must select at least one type of notification')]
 class BatchSubscriberModel
 {
     /**
@@ -22,8 +18,8 @@ class BatchSubscriberModel
 
     /**
      * @var User[] $users
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     private $users;
 
     /**
