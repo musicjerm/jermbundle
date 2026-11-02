@@ -203,7 +203,9 @@ class CRUDController extends AbstractController
         $em->persist($workingObject);
         $em->flush();
 
-        // save submitted file with new entity ID
+        // save submitted file with new entity ID. The upload controller answers with an error
+        // response when it fails; a forward never throws.
+        $fileSaved = true;
         if (
             method_exists($workingObject, 'getId') &&
             $workingObject->getId() &&
@@ -213,12 +215,13 @@ class CRUDController extends AbstractController
         ){
             // pass this responsibility to upload controller if present
             if (method_exists('App\Controller\UploadController', 'saveEntityFile')){
-                $this->forward('App\Controller\UploadController::saveEntityFile', array(
+                $fileResponse = $this->forward('App\Controller\UploadController::saveEntityFile', array(
                     'entity' => $this->yamlConfig['entity_name'],
                     'entityId' => $workingObject->getId(),
                     'uploadedFile' => $workingObject->getFile(),
                     'user' => $user
                 ));
+                $fileSaved = $fileResponse->isSuccessful();
             }else{
                 $fileSavePath = $this->fileSavePath.$workingObject->getId();
                 $workingObject->getFile()->move($fileSavePath, $workingObject->getFile()->getClientOriginalName());
@@ -230,6 +233,15 @@ class CRUDController extends AbstractController
             $this->forward('App\Controller\LoggingController::crudLogging', array(
                 'object' => $workingObject,
                 'crudMethod' => 'create'
+            ));
+        }
+
+        // the object is saved either way; say so if its file isn't
+        if (!$fileSaved){
+            return $this->render('@JermBundle/Modal/notification.html.twig', array(
+                'message' => 'Saved, but the file could not be uploaded. Please edit the item to try again, or contact an admin if the problem persists.',
+                'type' => 'error',
+                'refresh' => true
             ));
         }
 
@@ -339,12 +351,20 @@ class CRUDController extends AbstractController
 
             // pass this responsibility to upload controller if present
             if (method_exists('App\Controller\UploadController', 'saveEntityFile')){
-                $this->forward('App\Controller\UploadController::saveEntityFile', array(
+                $fileResponse = $this->forward('App\Controller\UploadController::saveEntityFile', array(
                     'entity' => $this->yamlConfig['entity_name'],
                     'entityId' => $id,
                     'uploadedFile' => $workingObject->getFile(),
                     'user' => $user
                 ));
+
+                // save nothing if the file couldn't be saved
+                if (!$fileResponse->isSuccessful()){
+                    return $this->render('@JermBundle/Modal/notification.html.twig', array(
+                        'message' => 'Not saved: the file could not be uploaded. Please try again, or contact an admin if the problem persists.',
+                        'type' => 'error'
+                    ));
+                }
             }else{
                 $this->setFileSavePath($this->yamlConfig['entity_name'], $workingObject->getId());
                 $fs = new Filesystem();
@@ -473,15 +493,22 @@ class CRUDController extends AbstractController
         // loop array, remove objects and files
         $countRemoved = 0;
         $objectStrings = array();
+        $failedStrings = array();
         foreach ($deleteArray as $key => $item){
             if ($item['delete']){
                 // check for files and delete them
                 // pass this responsibility to upload controller if present
                 if (method_exists('App\Controller\UploadController', 'removeEntityFile')){
-                    $this->forward('App\Controller\UploadController::removeEntityFile', array(
+                    $fileResponse = $this->forward('App\Controller\UploadController::removeEntityFile', array(
                         'entity' => $this->yamlConfig['entity_name'],
                         'entityId' => $key
                     ));
+
+                    // keep the object if its file couldn't be removed
+                    if (!$fileResponse->isSuccessful()){
+                        $failedStrings[] = $item['string'];
+                        continue;
+                    }
                 }else{
                     $this->setFileSavePath($this->yamlConfig['entity_name'], $key);
                     $fs = new Filesystem();
@@ -504,14 +531,19 @@ class CRUDController extends AbstractController
             }
         }
 
+        // items kept because their files couldn't be removed
+        $failedMessage = $failedStrings
+            ? ' Kept ('.count($failedStrings).') items whose files could not be removed: '.implode(', ', $failedStrings).'. Please try again, or contact an admin if the problem persists.'
+            : '';
+
         // flush database
         if ($countRemoved < 1){
             return $this->render('@JermBundle/Modal/notification.html.twig', array(
                 'modal_size' => 'modal-sm',
-                'message' => 'No items removed.',
-                'type' => 'info',
+                'message' => 'No items removed.'.$failedMessage,
+                'type' => $failedStrings ? 'error' : 'info',
                 'refresh' => true,
-                'fade' => true
+                'fade' => !$failedStrings
             ));
         }
 
@@ -528,10 +560,10 @@ class CRUDController extends AbstractController
         // render success notification
         return $this->render('@JermBundle/Modal/notification.html.twig', array(
             'modal_size' => 'modal-sm',
-            'message' => "Success! ($countRemoved) items removed.",
-            'type' => 'success',
+            'message' => "Success! ($countRemoved) items removed.".$failedMessage,
+            'type' => $failedStrings ? 'error' : 'success',
             'refresh' => true,
-            'fade' => true
+            'fade' => !$failedStrings
         ));
     }
 
