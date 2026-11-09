@@ -57,6 +57,7 @@
                             <a class="btn btn-sm btn-flat {{ action.btn }} head_action_btn"
                                data-toggle="modal"
                                data-target="#action_modal"
+                               {% if action.method is defined and action.method|upper == 'POST' %}data-method="POST" data-csrf="{{ csrf_token(constant('Musicjerm\\Bundle\\JermBundle\\JermBundle::ACTION_CSRF_TOKEN_ID')) }}"{% endif %}
                                data-href="{{ generatedPath }}">
                                 <i class="fa {{ action.icon }}"></i>
                                 {{ action.text }}
@@ -226,7 +227,7 @@
                                 </a>
 
                                 <a class="btn btn-xs btn-flat btn-danger delete_preset_btn"
-                                   data-href="{{ path('jerm_bundle_data_filter_preset_delete', { 'entity': entity, 'id': radio.vars.value }) }}"
+                                   data-href="{{ path('jerm_bundle_data_filter_preset_delete', { 'id': radio.vars.value }) }}"
                                    title="delete">
                                     <i class="fa fa-times"></i>
                                 </a>
@@ -284,6 +285,7 @@
     <script src="{{ asset('libraries/DataTables/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('libraries/DataTables/js/dataTables.bootstrap.min.js') }}"></script>
     <script id="render_dt" src="{{ asset('bundles/jerm/js/dtRender.js') }}"
+        data-csrf="{{ csrf_token(constant('Musicjerm\\Bundle\\JermBundle\\JermBundle::ACTION_CSRF_TOKEN_ID')) }}"
         data-entity="{{ entity }}"
         data-column-preset="{{ active_column_preset }}"
         data-filter-preset="{{ active_filter_preset }}"></script>

@@ -19,9 +19,11 @@ $(document).ready(function(){
 
     //open head action in modal
     headActionBtn.on('click', function(){
+        var post = $(this).attr('data-method') === 'POST';
         $.ajax({
-            type: 'GET',
+            type: post ? 'POST' : 'GET',
             url: $(this).attr('data-href'),
+            data: post ? {'_token': $(this).attr('data-csrf')} : undefined,
             success: function(data){
                 actionModal.html(data);
             },

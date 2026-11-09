@@ -14,6 +14,7 @@ use Musicjerm\Bundle\JermBundle\Entity\DtFilter;
 use Musicjerm\Bundle\JermBundle\Form\BlankFilterType;
 use Musicjerm\Bundle\JermBundle\Form\ColumnPresetType;
 use Musicjerm\Bundle\JermBundle\Form\FilterPresetType;
+use Musicjerm\Bundle\JermBundle\JermBundle;
 use Musicjerm\Bundle\JermBundle\Model\ColumnBuilder;
 use Musicjerm\Bundle\JermBundle\Model\ExcelDownloader;
 use Musicjerm\Bundle\JermBundle\Model\NavModel;
@@ -1046,13 +1047,18 @@ class BaseController extends AbstractController
 
     /**
      * @param ManagerRegistry $mr
+     * @param Request $request
      * @param UserInterface $user
      * @param $id
      * @return Response
      * @throws \Exception
      */
-    public function dataConfigDeleteAction(ManagerRegistry $mr, UserInterface $user, $id): Response
+    public function dataConfigDeleteAction(ManagerRegistry $mr, Request $request, UserInterface $user, $id): Response
     {
+        if (!$this->isCsrfTokenValid(JermBundle::ACTION_CSRF_TOKEN_ID, (string) $request->request->get('_token'))){
+            throw new AccessDeniedException('Invalid CSRF token.');
+        }
+
         $em = $mr->getManager();
         /**
          * @var DtConfig $dtConfig

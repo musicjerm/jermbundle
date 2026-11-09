@@ -6,6 +6,7 @@ $(document).ready(function(){
     var actionModal = $('#action_modal');
     var renderScript = $('#render_dt');
     var objectName = renderScript.attr('data-entity');
+    var csrfToken = renderScript.attr('data-csrf');
     var activeColumnPreset = renderScript.attr('data-column-preset');
     var activeFilterPreset = renderScript.attr('data-filter-preset');
     var filtersForm = $('#standard_data_filters_form');
@@ -31,7 +32,7 @@ $(document).ready(function(){
         $.ajax({
             type: 'POST',
             url: $(this).attr('data-href'),
-            data: {'id': selectedIds, 'diEntity': objectName},
+            data: {'id': selectedIds, 'diEntity': objectName, '_token': csrfToken},
             success: function(data){
                 actionModal.html(data);
             },
@@ -66,14 +67,14 @@ $(document).ready(function(){
     //delete preset
     deletePresetBtn.on('click', function(){
         if (confirm("Are you sure you want to delete this preset?")){
-            var urlString = $(this).attr('data-href');
-            $(this).closest('div.row').remove();
+            var presetRow = $(this).closest('div.row');
 
             $.ajax({
-                type: 'GET',
-                url: urlString,
+                type: 'POST',
+                url: $(this).attr('data-href'),
+                data: {'_token': csrfToken},
                 success: function(){
-
+                    presetRow.remove();
                 },
                 error: function(xhr){
                     alert('Unable to delete preset. Error: '+xhr.status);

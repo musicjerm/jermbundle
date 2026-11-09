@@ -6,6 +6,7 @@ use App\Entity\User;
 use Doctrine\Persistence\ManagerRegistry;
 use Musicjerm\Bundle\JermBundle\Entity\DtFilter;
 use Musicjerm\Bundle\JermBundle\Form\DtFilterType;
+use Musicjerm\Bundle\JermBundle\JermBundle;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
@@ -115,8 +116,12 @@ class FiltersController extends AbstractController
         ));
     }
 
-    public function deleteAction(UserInterface $user, int $id): Response
+    public function deleteAction(Request $request, UserInterface $user, int $id): Response
     {
+        if (!$this->isCsrfTokenValid(JermBundle::ACTION_CSRF_TOKEN_ID, (string) $request->request->get('_token'))){
+            throw new AccessDeniedException('Invalid CSRF token.');
+        }
+
         $em = $this->doctrine->getManager();
         /**
          * @var DtFilter $dtFilter
