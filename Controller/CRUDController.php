@@ -109,7 +109,8 @@ class CRUDController extends AbstractController
         if (isset($this->yamlConfig['actions'][$actionType][$actionName]['restrict_location']) && method_exists($user, 'getLocation')){
             $this->locationRestricted = true;
             if ($object && method_exists($object, 'getLocation')){
-                if ($user->getLocation() !== $object->getLocation()){
+                // a missing location matches nothing, not another missing location
+                if ($user->getLocation() === null || $user->getLocation() !== $object->getLocation()){
                     throw new AccessDeniedException();
                 }
             }else{
