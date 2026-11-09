@@ -67,15 +67,14 @@ $(document).ready(function(){
     //delete preset
     deletePresetBtn.on('click', function(){
         if (confirm("Are you sure you want to delete this preset?")){
-            var urlString = $(this).attr('data-href');
-            $(this).closest('div.row').remove();
+            var presetRow = $(this).closest('div.row');
 
             $.ajax({
                 type: 'POST',
-                url: urlString,
+                url: $(this).attr('data-href'),
                 data: {'_token': csrfToken},
                 success: function(){
-
+                    presetRow.remove();
                 },
                 error: function(xhr){
                     alert('Unable to delete preset. Error: '+xhr.status);
