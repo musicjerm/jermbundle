@@ -184,6 +184,12 @@ actions:
             params: { entity: 'location' }
             front_load:
                 - 'app/js/select2query.js'
+        app_location_recount:
+            role: 'ROLE_ADMIN'
+            text: 'Recount'
+            icon: 'fa-refresh'
+            btn: 'btn-success'
+            method: 'POST'
     item:
         jerm_bundle_crud_update:
             role: 'ROLE_ADMIN'
@@ -221,6 +227,29 @@ JermBundle Actions relate to CRUD methods or can also be custom methods designed
 data in a specific way.  At a basic level, these are simply routing links to modules, forms or
 functions that will present in a modal view.  Nav links are separated into 3 classes that are
 configured initially in a JBConfig/Entity YAML file.  See the examples above. 
+
+Head and item actions open with a GET, so they should only show something, such as a form.
+An action that changes data as soon as it's requested must take POST and check a CSRF token:
+
+* Group actions are always sent as a POST.
+* A head action is sent as a POST when it sets `method: 'POST'` (see `app_location_recount` above).
+
+Both send a `_token` field. Restrict the route to POST and check the token in the controller:
+
+```php
+use Musicjerm\Bundle\JermBundle\JermBundle;
+
+#[Route(path: '/location/recount', name: 'app_location_recount', methods: ['POST'])]
+public function recount(Request $request): Response
+{
+    if (!$this->isCsrfTokenValid(JermBundle::ACTION_CSRF_TOKEN_ID, (string) $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Invalid CSRF token.');
+    }
+    // ...
+}
+```
+
+The bundle's own column and filter preset deletes work the same way.
 
 ---
 

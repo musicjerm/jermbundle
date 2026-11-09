@@ -6,6 +6,7 @@ $(document).ready(function(){
     var actionModal = $('#action_modal');
     var renderScript = $('#render_dt');
     var objectName = renderScript.attr('data-entity');
+    var csrfToken = renderScript.attr('data-csrf');
     var activeColumnPreset = renderScript.attr('data-column-preset');
     var activeFilterPreset = renderScript.attr('data-filter-preset');
     var filtersForm = $('#standard_data_filters_form');
@@ -31,7 +32,7 @@ $(document).ready(function(){
         $.ajax({
             type: 'POST',
             url: $(this).attr('data-href'),
-            data: {'id': selectedIds, 'diEntity': objectName},
+            data: {'id': selectedIds, 'diEntity': objectName, '_token': csrfToken},
             success: function(data){
                 actionModal.html(data);
             },
@@ -70,8 +71,9 @@ $(document).ready(function(){
             $(this).closest('div.row').remove();
 
             $.ajax({
-                type: 'GET',
+                type: 'POST',
                 url: urlString,
+                data: {'_token': csrfToken},
                 success: function(){
 
                 },
