@@ -7,13 +7,13 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
     <title>
         {% if app_name is defined %}{{ app_name }}{% else %}App Name{% endif %}
         {% block page_name %}{% endblock %}
     </title>
-    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
     <link href="{{ asset('libraries/Bootstrap/css/bootstrap.min.css') }}" type="text/css" rel="stylesheet">
     <link href="{{ asset('libraries/Font-Awesome/css/font-awesome.min.css') }}" type="text/css" rel="stylesheet">
     <link href="{{ asset('libraries/Select2/css/select2.min.css') }}" type="text/css" rel="stylesheet">
@@ -26,6 +26,7 @@
     <link href="{{ asset('app/css/extra.css') }}" type="text/css" rel="stylesheet">
     {% block stylesheets %}{% endblock %}
     <link href="{{ absolute_url(asset('favicon.ico')) }}" rel="icon" type="image/x-icon">
+    {% block head_extra %}{% endblock %}
 </head>
 
 <body class="hold-transition {{ active_skin }} fixed">
